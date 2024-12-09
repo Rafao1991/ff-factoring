@@ -1,0 +1,19 @@
+{
+  "testEnvironment": "node",
+  "roots": ["<rootDir>/src"],
+  "testMatch": ["**/?(*.)+(spec|test).+(ts|tsx|js)"],
+  "modulePathIgnorePatterns": ["<rootDir>/node_modules/"],
+  "clearMocks": true,
+  "collectCoverage": true,
+  "collectCoverageFrom": [
+    "src/**/*.{js,ts}",
+    "!src/interfaces/*.{js,ts}",
+    "!src/**/*.model.{js,ts}"
+  ],
+  "moduleNameMapper": {
+    "@/(.*)": "<rootDir>/src/$1"
+  },
+  "transform": {
+    "^.+\\.(ts|tsx)$": "ts-jest"
+  }
+}

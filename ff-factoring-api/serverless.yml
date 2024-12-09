@@ -1,0 +1,249 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: rafao1991
+# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
+app: ff-factoring
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: ff-factoring-api
+
+build:
+  esbuild:
+    bundle: true
+    minify: true
+
+stages:
+  default:
+    params:
+      customersTableName: ${sls:stage}-${self:service}-customers
+      transactionsTableName: ${sls:stage}-${self:service}-transactions
+
+resources:
+  Resources:
+    CustomersDynamoDbTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${param:customersTableName}
+        AttributeDefinitions:
+          - AttributeName: documentNumber
+            AttributeType: S
+          - AttributeName: name
+            AttributeType: S
+          - AttributeName: emails
+            AttributeType: SS
+          - AttributeName: phones
+            AttributeType: SS
+        BillingMode: PAY_PER_REQUEST
+        OnDemandThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        KeySchema:
+          - AttributeName: documentNumber
+            KeyType: HASH
+        SSESpecification:
+          SSEEnabled: false
+        TableClass: STANDARD
+        Tags:
+          - Key: service
+            Value: ${self:service}
+          - Key: stage
+            Value: ${sls:stage}
+    TransactionsDynamoDbTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${param:transactionsTableName}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: customerDocumentNumber
+            AttributeType: S
+          - AttributeName: customerName
+            AttributeType: S
+          - AttributeName: amount
+            AttributeType: N
+          - AttributeName: date
+            AttributeType: S
+          - AttributeName: dueDate
+            AttributeType: S
+          - AttributeName: type
+            AttributeType: S
+          - AttributeName: completed
+            AttributeType: B
+        BillingMode: PAY_PER_REQUEST
+        OnDemandThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        LocalSecondaryIndexes:
+          - IndexName: customerDocumentNumber-index
+            KeySchema:
+              - AttributeName: id
+                KeyType: HASH
+              - AttributeName: customerDocumentNumber
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: customerName-index
+            KeySchema:
+              - AttributeName: id
+                KeyType: HASH
+              - AttributeName: customerName
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: amount-index
+            KeySchema:
+              - AttributeName: id
+                KeyType: HASH
+              - AttributeName: amount
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: date-index
+            KeySchema:
+              - AttributeName: id
+                KeyType: HASH
+              - AttributeName: date
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: dueDate-index
+            KeySchema:
+              - AttributeName: id
+                KeyType: HASH
+              - AttributeName: dueDate
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: type-index
+            KeySchema:
+              - AttributeName: id
+                KeyType: HASH
+              - AttributeName: type
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+        GlobalSecondaryIndexes:
+          - IndexName: customerDocumentNumber-amount-index
+            KeySchema:
+              - AttributeName: customerDocumentNumber
+                KeyType: HASH
+              - AttributeName: amount
+                KeyType: RANGE
+            Projection:
+              ProjectionType: KEYS_ONLY
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+          - IndexName: customerDocumentNumber-date-index
+            KeySchema:
+              - AttributeName: customerDocumentNumber
+                KeyType: HASH
+              - AttributeName: date
+                KeyType: RANGE
+            Projection:
+              ProjectionType: KEYS_ONLY
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+          - IndexName: customerDocumentNumber-dueDate-index
+            KeySchema:
+              - AttributeName: customerDocumentNumber
+                KeyType: HASH
+              - AttributeName: dueDate
+                KeyType: RANGE
+            Projection:
+              ProjectionType: KEYS_ONLY
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+          - IndexName: customerDocumentNumber-type-index
+            KeySchema:
+              - AttributeName: customerDocumentNumber
+                KeyType: HASH
+              - AttributeName: type
+                KeyType: RANGE
+            Projection:
+              ProjectionType: KEYS_ONLY
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+        SSESpecification:
+          SSEEnabled: false
+        TableClass: STANDARD
+        Tags:
+          - Key: service
+            Value: ${self:service}
+          - Key: stage
+            Value: ${sls:stage}
+
+provider:
+  name: aws
+  architecture: x86_64
+  runtime: nodejs20.x
+  timeout: 10
+  memorySize: 128
+  logs:
+    logFormat: JSON
+    httpApi: true
+  httpApi:
+    metrics: true
+  tracing:
+    lambda: true
+  tags:
+    service: ${self:service}
+    stage: ${sls:stage}
+  environment:
+    CUSTOMERS_TABLE_NAME: ${param:customersTableName}
+    TRANSACTIONS_TABLE_NAME: ${param:transactionsTableName}
+
+functions:
+  healthCheck:
+    name: ${sls:stage}-${self:service}-healthCheck
+    handler: src/index.healthCheckHandler
+    events:
+      - httpApi:
+          path: /health-check
+          method: get
+  deepCheck:
+    name: ${sls:stage}-${self:service}-deepCheck
+    handler: src/index.deepCheckHandler
+    events:
+      - httpApi:
+          path: /deep-check
+          method: get
+  createCustomer:
+    name: ${sls:stage}-${self:service}-createCustomer
+    handler: src/index.createCustomerHandler
+    events:
+      - httpApi:
+          path: /customers
+          method: post
+  updateCustomer:
+    name: ${sls:stage}-${self:service}-updateCustomer
+    handler: src/index.updateCustomerHandler
+    events:
+      - httpApi:
+          path: /customers/{documentNumber}
+          method: put
+  listCustomers:
+    name: ${sls:stage}-${self:service}-listCustomers
+    handler: src/index.listCustomersHandler
+    events:
+      - httpApi:
+          path: /customers
+          method: get
+  getCustomer:
+    name: ${sls:stage}-${self:service}-getCustomer
+    handler: src/index.getCustomerHandler
+    events:
+      - httpApi:
+          path: /customers/{documentNumber}
+          method: get
+
+plugins:
+  - serverless-offline
+
+custom:
+  serverless-offline:
+    httpPort: 3001
