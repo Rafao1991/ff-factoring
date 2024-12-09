@@ -10,7 +10,6 @@ export const createCustomerHandler = async (event: APIGatewayProxyEvent) => {
   console.info({ event });
 
   const newCustomer: Customer = JSON.parse(event.body || '{}');
-
   console.info({ body: newCustomer });
 
   if (!newCustomer.documentNumber) {
