@@ -5,6 +5,7 @@ import './globals.css';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/app-sidebar';
 import { Files, Home, LogOut, Users, Wallet } from 'lucide-react';
+import { Toaster } from '@/components/ui/toaster';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -66,6 +67,7 @@ export default function RootLayout({
             {children}
           </div>
         </SidebarProvider>
+        <Toaster />
       </body>
     </html>
   );

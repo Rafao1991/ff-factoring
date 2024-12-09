@@ -11,35 +11,9 @@ import {
 import { DataTable } from '@/components/data-table';
 import { formatCpfCnpj, formatPhone } from '@/lib/utils';
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, ChevronRight } from 'lucide-react';
+import { ArrowUpDown, ChevronRight, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-
-const customers: Customer[] = [
-  {
-    name: 'Rafael Sousa',
-    documentNumber: '12345678901',
-    emails: ['email@teste.com'],
-    phones: ['912345678'],
-  },
-  {
-    name: 'João Silva',
-    documentNumber: '12345678000101',
-    emails: ['email@teste.com'],
-    phones: [],
-  },
-  {
-    name: 'Maria Silva',
-    documentNumber: '12345678901',
-    emails: ['email@teste.com', 'email2@teste.com'],
-    phones: ['912345678', '912345679'],
-  },
-  {
-    name: 'Pedro Sousa',
-    documentNumber: '12345678000101',
-    emails: [],
-    phones: ['12345678'],
-  },
-];
+import { useEffect, useState } from 'react';
 
 const filter = {
   placeholder: 'Filtrar pelo nome do cliente...',
@@ -53,6 +27,20 @@ const newTransactionButton = 'Novo cliente';
 
 export default function Customers() {
   const router = useRouter();
+  const [customers, setCustomers] = useState<Customer[]>([]);
+
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/customers`
+      );
+      const { data } = await response.json();
+
+      setCustomers(data);
+    };
+
+    fetchCustomers();
+  }, []);
 
   const columns: ColumnDef<Customer>[] = [
     {
@@ -163,7 +151,14 @@ export default function Customers() {
         </div>
       </CardHeader>
       <CardContent>
-        <DataTable columns={columns} data={customers} filter={filter} />
+        {customers ? (
+          <DataTable columns={columns} data={customers} filter={filter} />
+        ) : (
+          <div className='flex items-center justify-center h-screen'>
+            <Loader2 className='animate-spin w-12 h-12' />
+            <p className='text-center'>Carregando a lista de clientes...</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

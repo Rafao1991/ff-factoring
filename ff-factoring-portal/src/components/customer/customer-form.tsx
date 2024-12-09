@@ -230,7 +230,9 @@ export default function CustomerForm({
           ))}
         </div>
 
-        <Button type='submit'>Salvar</Button>
+        <Button type='submit' disabled={!form.formState.isDirty}>
+          Salvar
+        </Button>
       </form>
     </Form>
   );

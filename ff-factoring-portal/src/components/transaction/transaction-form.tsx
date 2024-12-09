@@ -33,33 +33,6 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-const customersData: Customer[] = [
-  {
-    name: 'Rafael Sousa',
-    documentNumber: '12345678901',
-    emails: [],
-    phones: [],
-  },
-  {
-    name: 'João Silva',
-    documentNumber: '12345678000101',
-    emails: [],
-    phones: [],
-  },
-  {
-    name: 'Maria Silva',
-    documentNumber: '12345678901',
-    emails: [],
-    phones: [],
-  },
-  {
-    name: 'Pedro Sousa',
-    documentNumber: '12345678000101',
-    emails: [],
-    phones: [],
-  },
-];
-
 const today = new Date();
 const minDate = new Date(today.getFullYear(), 0, 1);
 
@@ -149,16 +122,20 @@ export default function TransactionForm({
 
   useEffect(() => {
     const fetchCustomers = async () => {
-      const customers = customersData.map<CustomerSelect>((customerData) => {
-        return {
-          label: customerData.name,
-          value: customerData.documentNumber,
-        };
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/customers`
+      );
+      const { data } = await response.json();
+      const customers = (data as Customer[]).map<CustomerSelect>(
+        (customerData) => {
+          return {
+            label: customerData.name,
+            value: customerData.documentNumber,
+          };
+        }
+      );
 
-      setTimeout(() => {
-        setCustomers(customers);
-      }, 3000);
+      setCustomers(customers);
     };
 
     fetchCustomers();
@@ -357,7 +334,9 @@ export default function TransactionForm({
                 </FormItem>
               )}
             />
-            <Button type='submit'>Salvar</Button>
+            <Button type='submit' disabled={!form.formState.isDirty}>
+              Salvar
+            </Button>
           </form>
         </Form>
       ) : (

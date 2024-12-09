@@ -4,6 +4,7 @@ import CustomerForm, {
   customerFormSchema,
 } from '@/components/customer/customer-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
@@ -18,14 +19,12 @@ function Customer() {
 
   useEffect(() => {
     const fetchCustomer = async (documentNumber: string) => {
-      setTimeout(() => {
-        setCustomer({
-          documentNumber,
-          name: 'Rafael Sousa',
-          emails: ['rafaelsousa@example.com', 'rafaelsousa@gmail.com'],
-          phones: ['11999999999'],
-        });
-      }, 3000);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/customers/${documentNumber}`
+      );
+      const { data } = await response.json();
+
+      setCustomer(data);
     };
 
     if (!documentNumber) return;
@@ -33,11 +32,39 @@ function Customer() {
     fetchCustomer(documentNumber);
   }, [documentNumber]);
 
-  function onSubmit(values: z.infer<typeof customerFormSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
-  }
+  const onSubmit = async (values: z.infer<typeof customerFormSchema>) => {
+    try {
+      const { documentNumber, ...newData } = values;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/customers/${documentNumber}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newData),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao atualizar o cliente',
+          description: `${response.status} - ${response.statusText} - ${error.message}`,
+        });
+        return;
+      }
+
+      router.back();
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao atualizar o cliente',
+        description: `Erro inesperado - ${JSON.stringify(error)}`,
+      });
+    }
+  };
 
   // Redirect to the transaction page if the id is not found
   if (!documentNumber) {
