@@ -26,7 +26,7 @@ function Transaction() {
           amount: 100,
           date: new Date(2024, 6, 1),
           dueDate: new Date(2024, 9, 1),
-          type: 'Cheque',
+          type: 'cheque',
           completed: true,
         });
       }, 3000);

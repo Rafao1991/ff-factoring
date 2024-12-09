@@ -16,8 +16,8 @@ import { useRouter } from 'next/navigation';
 import { formatCpfCnpj } from '@/lib/utils';
 
 enum TransactionType {
-  Check = 'Cheque',
-  Ticket = 'Duplicata',
+  Check = 'cheque',
+  Ticket = 'duplicata',
 }
 
 const customers: Customer[] = [

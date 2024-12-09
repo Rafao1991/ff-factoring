@@ -1,5 +1,5 @@
 import { getDynamoDB } from '@/clients/dynamodb';
-import { getCustomerTableName } from '@/configs';
+import { getTransactionsTableName } from '@/configs';
 import {
   GetCommand,
   GetCommandInput,
@@ -11,20 +11,20 @@ import {
   ScanCommandOutput,
 } from '@aws-sdk/lib-dynamodb';
 
-const customerTableName = getCustomerTableName();
+const transactionsTableName = getTransactionsTableName();
 
-export const scanCustomers = async (): Promise<Customer[]> => {
+export const scanTransactions = async (): Promise<Transaction[]> => {
   const { client, docClient } = getDynamoDB();
 
   try {
     const input: ScanCommandInput = {
-      TableName: customerTableName,
+      TableName: transactionsTableName,
     };
     const command = new ScanCommand(input);
     const response: ScanCommandOutput = await docClient.send(command);
     console.info({
-      service: 'customer',
-      action: 'scanCustomers',
+      service: 'transaction',
+      action: 'scanTransactions',
       input,
       command,
       response,
@@ -34,14 +34,18 @@ export const scanCustomers = async (): Promise<Customer[]> => {
       return [];
     }
 
-    const customers: Customer[] = response.Items.map((item) => ({
-      documentNumber: item.documentNumber,
-      name: item.name,
-      emails: item.emails,
-      phones: item.phones,
+    const transactions: Transaction[] = response.Items.map((item) => ({
+      id: item.id,
+      customerDocumentNumber: item.customerDocumentNumber,
+      customerName: item.customerName,
+      amount: item.amount,
+      date: item.date,
+      dueDate: item.dueDate,
+      type: item.type,
+      completed: item.completed,
     }));
 
-    return customers;
+    return transactions;
   } catch (error) {
     console.error({
       service: 'customer',
@@ -59,34 +63,28 @@ export const scanCustomers = async (): Promise<Customer[]> => {
     client.destroy();
     docClient.destroy();
   }
+
+  return [];
 };
 
-export const getCustomerByDocumentNumber = async (
-  documentNumber: string
-): Promise<Customer | undefined> => {
+export const getTransactionById = async (
+  id: string
+): Promise<Transaction | undefined> => {
   const { client, docClient } = getDynamoDB();
-
-  console.info({
-    service: 'customer',
-    action: 'getCustomerByDocumentNumber',
-    message: 'Getting customer by document number',
-    customerTableName,
-    documentNumber,
-  });
 
   try {
     const input: GetCommandInput = {
-      TableName: customerTableName,
+      TableName: transactionsTableName,
       Key: {
-        documentNumber,
+        id,
       },
       ConsistentRead: true,
     };
     const command = new GetCommand(input);
     const response: GetCommandOutput = await docClient.send(command);
     console.info({
-      service: 'customer',
-      action: 'getCustomerByDocumentNumber',
+      service: 'transaction',
+      action: 'getTransactionById',
       input,
       command,
       response,
@@ -96,25 +94,29 @@ export const getCustomerByDocumentNumber = async (
       return undefined;
     }
 
-    const customer: Customer = {
-      documentNumber: response.Item.documentNumber,
-      name: response.Item.name,
-      emails: response.Item.emails,
-      phones: response.Item.phones,
+    const transaction: Transaction = {
+      id: response.Item.id,
+      customerDocumentNumber: response.Item.customerDocumentNumber,
+      customerName: response.Item.customerName,
+      amount: response.Item.amount,
+      date: response.Item.date,
+      dueDate: response.Item.dueDate,
+      type: response.Item.type,
+      completed: response.Item.completed,
     };
 
-    return customer;
+    return transaction;
   } catch (error) {
     console.error({
       service: 'customer',
-      action: 'getCustomerByDocumentNumber',
+      action: 'scanCustomers',
       error,
     });
     throw error;
   } finally {
     console.info({
       service: 'customer',
-      action: 'getCustomerByDocumentNumber',
+      action: 'scanCustomers',
       message: 'DynamoDB client closed',
     });
 
@@ -123,38 +125,42 @@ export const getCustomerByDocumentNumber = async (
   }
 };
 
-export const putCustomer = async (customer: Customer) => {
+export const putTransaction = async (transaction: Transaction) => {
   const { client, docClient } = getDynamoDB();
 
   try {
     const input: PutCommandInput = {
-      TableName: customerTableName,
+      TableName: transactionsTableName,
       Item: {
-        documentNumber: customer.documentNumber,
-        name: customer.name,
-        emails: customer.emails,
-        phones: customer.phones,
+        id: transaction.id,
+        customerDocumentNumber: transaction.customerDocumentNumber,
+        customerName: transaction.customerName,
+        amount: transaction.amount,
+        date: transaction.date,
+        dueDate: transaction.dueDate,
+        type: transaction.type,
+        completed: transaction.completed,
       },
     };
     const command = new PutCommand(input);
     await docClient.send(command);
     console.info({
-      service: 'customer',
-      action: 'createCustomer',
+      service: 'transaction',
+      action: 'createTransaction',
       input,
       command,
     });
   } catch (error) {
     console.error({
       service: 'customer',
-      action: 'createCustomer',
+      action: 'scanCustomers',
       error,
     });
     throw error;
   } finally {
     console.info({
       service: 'customer',
-      action: 'createCustomer',
+      action: 'scanCustomers',
       message: 'DynamoDB client closed',
     });
 

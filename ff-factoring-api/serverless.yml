@@ -75,22 +75,6 @@ resources:
           - AttributeName: id
             KeyType: HASH
         LocalSecondaryIndexes:
-          - IndexName: customerDocumentNumber-index
-            KeySchema:
-              - AttributeName: id
-                KeyType: HASH
-              - AttributeName: customerDocumentNumber
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
-          - IndexName: customerName-index
-            KeySchema:
-              - AttributeName: id
-                KeyType: HASH
-              - AttributeName: customerName
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
           - IndexName: amount-index
             KeySchema:
               - AttributeName: id
@@ -115,14 +99,6 @@ resources:
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
-          - IndexName: type-index
-            KeySchema:
-              - AttributeName: id
-                KeyType: HASH
-              - AttributeName: type
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
         GlobalSecondaryIndexes:
           - IndexName: customerDocumentNumber-amount-index
             KeySchema:
@@ -131,7 +107,7 @@ resources:
               - AttributeName: amount
                 KeyType: RANGE
             Projection:
-              ProjectionType: KEYS_ONLY
+              amountProjectionType: ALL
             ProvisionedThroughput:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
@@ -142,7 +118,7 @@ resources:
               - AttributeName: date
                 KeyType: RANGE
             Projection:
-              ProjectionType: KEYS_ONLY
+              amountProjectionType: ALL
             ProvisionedThroughput:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
@@ -153,18 +129,16 @@ resources:
               - AttributeName: dueDate
                 KeyType: RANGE
             Projection:
-              ProjectionType: KEYS_ONLY
+              amountProjectionType: ALL
             ProvisionedThroughput:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
-          - IndexName: customerDocumentNumber-type-index
+          - IndexName: customerDocumentNumber-index
             KeySchema:
               - AttributeName: customerDocumentNumber
                 KeyType: HASH
-              - AttributeName: type
-                KeyType: RANGE
             Projection:
-              ProjectionType: KEYS_ONLY
+              amountProjectionType: ALL
             ProvisionedThroughput:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
@@ -239,6 +213,41 @@ functions:
     events:
       - httpApi:
           path: /customers/{documentNumber}
+          method: get
+  createTransaction:
+    name: ${sls:stage}-${self:service}-createTransaction
+    handler: src/index.createTransactionHandler
+    events:
+      - httpApi:
+          path: /transactions
+          method: post
+  updateTransaction:
+    name: ${sls:stage}-${self:service}-updateTransaction
+    handler: src/index.updateTransactionHandler
+    events:
+      - httpApi:
+          path: /transactions/{id}
+          method: put
+  completeTransaction:
+    name: ${sls:stage}-${self:service}-completeTransaction
+    handler: src/index.completeTransactionHandler
+    events:
+      - httpApi:
+          path: /transactions/{id}/complete
+          method: put
+  listTransactions:
+    name: ${sls:stage}-${self:service}-listTransactions
+    handler: src/index.listTransactionsHandler
+    events:
+      - httpApi:
+          path: /transactions
+          method: get
+  getTransaction:
+    name: ${sls:stage}-${self:service}-getTransaction
+    handler: src/index.getTransactionHandler
+    events:
+      - httpApi:
+          path: /transactions/{id}
           method: get
 
 plugins:

@@ -1,7 +1,4 @@
-import {
-  createCustomer,
-  getCustomerByDocumentNumber,
-} from '@/services/customer';
+import { putCustomer, getCustomerByDocumentNumber } from '@/services/customer';
 import {
   getBadRequestResponse,
   getInternalServerErrorResponse,
@@ -38,7 +35,7 @@ export const createCustomerHandler = async (event: APIGatewayProxyEvent) => {
       );
     }
 
-    await createCustomer(newCustomer);
+    await putCustomer(newCustomer);
     console.info({ message: 'Customer created' });
 
     return getNoContentResponse();

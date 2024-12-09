@@ -2,7 +2,7 @@ import { isOffline } from '@/configs';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 
-export const dynamodbClient = () => {
+const dynamodbClient = () => {
   const offline = isOffline();
   console.info({ offline });
 
@@ -19,7 +19,7 @@ export const dynamodbClient = () => {
   return client;
 };
 
-export const dynamodbDocumentClient = (client: DynamoDBClient) => {
+const dynamodbDocumentClient = (client: DynamoDBClient) => {
   if (!client) {
     throw new Error('DynamoDB client is undefined');
   }
@@ -33,4 +33,14 @@ export const dynamodbDocumentClient = (client: DynamoDBClient) => {
   });
 
   return docClient;
+};
+
+export const getDynamoDB = () => {
+  const client = dynamodbClient();
+  const docClient = dynamodbDocumentClient(client);
+
+  return {
+    client,
+    docClient,
+  };
 };

@@ -3,10 +3,7 @@ import {
   getInternalServerErrorResponse,
   getNoContentResponse,
 } from '@/helpers/api-wrapper';
-import {
-  getCustomerByDocumentNumber,
-  updateCustomer,
-} from '@/services/customer';
+import { getCustomerByDocumentNumber, putCustomer } from '@/services/customer';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 
 export const updateCustomerHandler = async (event: APIGatewayProxyEvent) => {
@@ -45,7 +42,7 @@ export const updateCustomerHandler = async (event: APIGatewayProxyEvent) => {
 
     console.info({ customer });
 
-    await updateCustomer(customer);
+    await putCustomer(customer);
 
     return getNoContentResponse();
   } catch (error) {

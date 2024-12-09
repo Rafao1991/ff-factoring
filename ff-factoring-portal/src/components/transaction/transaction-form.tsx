@@ -67,8 +67,8 @@ const dueDateIsTooLow = `A data de vencimento deve ser maior que ${format(
 const pickADate = 'Escolha uma data';
 
 enum TransactionType {
-  Check = 'Cheque',
-  Ticket = 'Duplicata',
+  Check = 'cheque',
+  Ticket = 'duplicata',
 }
 
 interface CustomerSelect {

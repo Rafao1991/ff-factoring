@@ -6,3 +6,11 @@ export {
   listCustomersHandler,
   updateCustomerHandler,
 } from '@/handlers/customer';
+
+export {
+  completeTransactionHandler,
+  createTransactionHandler,
+  getTransactionHandler,
+  listTransactionsHandler,
+  updateTransactionHandler,
+} from '@/handlers/transaction';
