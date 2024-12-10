@@ -11,7 +11,6 @@ export const getCustomerHandler = async (event: APIGatewayProxyEvent) => {
   console.info({ event });
 
   const documentNumber = event.pathParameters?.documentNumber;
-
   console.info({ documentNumber });
 
   if (!documentNumber) {

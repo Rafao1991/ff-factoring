@@ -9,32 +9,39 @@ import { APIGatewayProxyEvent } from 'aws-lambda';
 export const createCustomerHandler = async (event: APIGatewayProxyEvent) => {
   console.info({ event });
 
-  const newCustomer: Customer = JSON.parse(event.body || '{}');
-  console.info({ body: newCustomer });
+  const body: Customer = JSON.parse(event.body || '{}');
+  console.info({ body: body });
 
-  if (!newCustomer.documentNumber) {
+  if (!body.documentNumber) {
     console.info({ message: 'Missing documentNumber' });
     return getBadRequestResponse('Missing documentNumber');
   }
 
-  if (!newCustomer.name) {
+  if (!body.name) {
     console.info({ message: 'Missing name' });
     return getBadRequestResponse('Missing name');
   }
 
   try {
     const existingCustomer: Customer | undefined =
-      await getCustomerByDocumentNumber(newCustomer.documentNumber);
+      await getCustomerByDocumentNumber(body.documentNumber);
     console.info({ existingCustomer });
 
     if (existingCustomer) {
       console.info({ message: 'Customer already exists' });
       return getBadRequestResponse(
-        `Customer with documentNumber ${newCustomer.documentNumber} already exists`
+        `Customer with documentNumber ${body.documentNumber} already exists`
       );
     }
 
-    await putCustomer(newCustomer);
+    const customer: Customer = {
+      documentNumber: body.documentNumber,
+      name: body.name,
+      emails: body.emails,
+      phones: body.phones,
+    };
+    console.info({ customer });
+    await putCustomer(customer);
     console.info({ message: 'Customer created' });
 
     return getNoContentResponse();

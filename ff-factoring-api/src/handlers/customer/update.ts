@@ -11,7 +11,6 @@ export const updateCustomerHandler = async (event: APIGatewayProxyEvent) => {
 
   const documentNumber = event.pathParameters?.documentNumber;
   const body = JSON.parse(event.body || '{}');
-
   console.info({ documentNumber, body });
 
   if (!documentNumber) {
@@ -39,7 +38,6 @@ export const updateCustomerHandler = async (event: APIGatewayProxyEvent) => {
       emails: body.emails,
       phones: body.phones,
     };
-
     console.info({ customer });
 
     await putCustomer(customer);

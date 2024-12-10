@@ -13,6 +13,8 @@ import {
 
 const transactionsTableName = getTransactionsTableName();
 
+export const validTransactionTypes = ['cheque', 'duplicata'] as const;
+
 export const scanTransactions = async (): Promise<Transaction[]> => {
   const { client, docClient } = getDynamoDB();
 
@@ -63,8 +65,6 @@ export const scanTransactions = async (): Promise<Transaction[]> => {
     client.destroy();
     docClient.destroy();
   }
-
-  return [];
 };
 
 export const getTransactionById = async (

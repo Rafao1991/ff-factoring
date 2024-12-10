@@ -1,97 +1,48 @@
 import {
+  getBadRequestResponse,
   getInternalServerErrorResponse,
   getNoContentResponse,
 } from '@/helpers/api-wrapper';
-import { putTransaction } from '@/services/transaction';
+import { putTransaction, validTransactionTypes } from '@/services/transaction';
 import { APIGatewayEvent } from 'aws-lambda';
 import Snowflake from 'snowflake-id';
 
-const validTransactionTypes = ['cheque', 'duplicata'] as const;
 const offset = (new Date().getFullYear() - 1970) * 31536000 * 1000;
 
 export const createTransactionHandler = async (event: APIGatewayEvent) => {
   console.info({ event });
 
-  const newTransaction: Transaction = JSON.parse(event.body || '{}');
-  console.info({ body: newTransaction });
+  const body: Transaction = JSON.parse(event.body || '{}');
+  console.info({ body: body });
 
-  if (!newTransaction.customerDocumentNumber) {
+  if (!body.customerDocumentNumber) {
     console.info({ message: 'Missing customerDocumentNumber' });
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        message: 'Missing customerDocumentNumber',
-      }),
-    };
+    return getBadRequestResponse('Missing customerDocumentNumber');
   }
 
-  if (!newTransaction.customerName) {
+  if (!body.customerName) {
     console.info({ message: 'Missing customerName' });
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        message: 'Missing customerName',
-      }),
-    };
+    return getBadRequestResponse('Missing customerName');
   }
 
-  if (!newTransaction.amount) {
+  if (!body.amount) {
     console.info({ message: 'Missing amount' });
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        message: 'Missing amount',
-      }),
-    };
+    return getBadRequestResponse('Missing amount');
   }
 
-  if (!newTransaction.date) {
+  if (!body.date) {
     console.info({ message: 'Missing date' });
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        message: 'Missing date',
-      }),
-    };
+    return getBadRequestResponse('Missing date');
   }
 
-  if (!newTransaction.dueDate) {
+  if (!body.dueDate) {
     console.info({ message: 'Missing dueDate' });
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        message: 'Missing dueDate',
-      }),
-    };
+    return getBadRequestResponse('Missing dueDate');
   }
 
-  if (
-    !newTransaction.type ||
-    !validTransactionTypes.includes(newTransaction.type)
-  ) {
+  if (!body.type || !validTransactionTypes.includes(body.type)) {
     console.info({ message: 'Missing type' });
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        message: 'Missing type',
-      }),
-    };
-  }
-
-  if (
-    newTransaction.completed === undefined ||
-    newTransaction.completed === null ||
-    newTransaction.completed === true
-  ) {
-    console.info({
-      message: 'Wrong transaction status',
-    });
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        message: 'Wrong transaction status',
-      }),
-    };
+    return getBadRequestResponse('Missing type');
   }
 
   try {
@@ -99,7 +50,18 @@ export const createTransactionHandler = async (event: APIGatewayEvent) => {
       mid: 1,
       offset,
     });
-    newTransaction.id = snowflake.generate();
+
+    const newTransaction: Transaction = {
+      id: snowflake.generate(),
+      customerDocumentNumber: body.customerDocumentNumber,
+      customerName: body.customerName,
+      amount: body.amount,
+      date: body.date,
+      dueDate: body.dueDate,
+      type: body.type,
+      completed: false,
+    };
+    console.info({ newTransaction });
     await putTransaction(newTransaction);
     console.info({ message: 'Transaction created' });
 
