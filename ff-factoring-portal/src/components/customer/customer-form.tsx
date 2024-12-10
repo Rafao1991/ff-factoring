@@ -10,6 +10,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { validateCpfCnpj } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Trash2 } from 'lucide-react';
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -19,6 +20,7 @@ const documentNumberTitle = 'Documento (CPF/CNPJ) *';
 const documentNumberIsMandatory = 'O documento deve ser informado';
 const documentNumberIsTooShort = 'O documento deve ter pelo menos 11 dígitos';
 const documentNumberIsTooLong = 'O documento deve ter no máximo 14 dígitos';
+const documentNumberIsNotValid = 'O documento deve ser um CPF ou CNPJ';
 
 const nameTitle = 'Nome *';
 const nameIsMandatory = 'O nome deve ser informado';
@@ -43,6 +45,9 @@ export const customerFormSchema = z.object({
     })
     .max(14, {
       message: documentNumberIsTooLong,
+    })
+    .refine((value) => validateCpfCnpj(value), {
+      message: documentNumberIsNotValid,
     }),
   name: z
     .string({
@@ -68,12 +73,14 @@ export const customerFormSchema = z.object({
 
 export default function CustomerForm({
   onSubmit,
+  isLoading,
   customer,
 }: {
-  onSubmit: (customer: z.infer<typeof customerFormSchema>) => void;
+  onSubmit: (customer: CustomerSchema) => void;
+  isLoading: boolean;
   customer?: Customer;
 }) {
-  const form = useForm<z.infer<typeof customerFormSchema>>({
+  const form = useForm<CustomerSchema>({
     resolver: zodResolver(customerFormSchema),
     defaultValues: customer
       ? {
@@ -114,6 +121,7 @@ export default function CustomerForm({
         <FormField
           name='documentNumber'
           control={form.control}
+          disabled={!!customer}
           render={({ field }) => (
             <FormItem>
               <FormLabel>{documentNumberTitle}</FormLabel>
@@ -230,10 +238,12 @@ export default function CustomerForm({
           ))}
         </div>
 
-        <Button type='submit' disabled={!form.formState.isDirty}>
+        <Button type='submit' disabled={!form.formState.isDirty || isLoading}>
           Salvar
         </Button>
       </form>
     </Form>
   );
 }
+
+export type CustomerSchema = z.infer<typeof customerFormSchema>;

@@ -1,46 +1,50 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Error } from '@/components/error';
 import TransactionForm, {
-  transactionFormSchema,
+  TransactionSchema,
 } from '@/components/transaction/transaction-form';
-import { z } from 'zod';
+import useGetTransaction from '@/hooks/api/transactions/use-get-transaction';
+import useUpdateTransaction from '@/hooks/api/transactions/use-update-transaction';
+import { toast } from '@/hooks/use-toast';
 
 const title = 'Detalhe da operação';
 
 function Transaction() {
   const router = useRouter();
   const id = useSearchParams().get('id');
-  const [transaction, setTransaction] = useState<Transaction | null>(null);
+  const { data: transaction, isError, isLoading } = useGetTransaction(id);
+  const {
+    mutate: updateTransaction,
+    isError: isUpdateError,
+    isPending: isUpdateLoading,
+    isSuccess: isUpdateSuccess,
+    error: updateError,
+  } = useUpdateTransaction();
 
   useEffect(() => {
-    const fetchTransaction = async (id: string) => {
-      setTimeout(() => {
-        setTransaction({
-          id,
-          customerDocumentNumber: '12345678901',
-          customerName: 'Rafael Sousa',
-          amount: 100,
-          date: new Date(2024, 6, 1),
-          dueDate: new Date(2024, 9, 1),
-          type: 'cheque',
-          completed: true,
-        });
-      }, 3000);
-    };
+    if (isUpdateSuccess) {
+      router.back();
+    }
+  }, [isUpdateSuccess, router]);
 
+  useEffect(() => {
+    if (isUpdateError) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao criar a operação',
+        description: `Erro inesperado - ${updateError.message}`,
+      });
+    }
+  }, [isUpdateError, updateError]);
+
+  function onSubmit(transaction: TransactionSchema) {
     if (!id) return;
-
-    fetchTransaction(id);
-  }, [id]);
-
-  function onSubmit(values: z.infer<typeof transactionFormSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+    updateTransaction({ id, transaction });
   }
 
   // Redirect to the transaction page if the id is not found
@@ -57,13 +61,21 @@ function Transaction() {
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        {transaction ? (
-          <TransactionForm onSubmit={onSubmit} transaction={transaction} />
+        {!isError ? (
+          !isLoading && transaction ? (
+            <TransactionForm
+              onSubmit={onSubmit}
+              isLoading={isUpdateLoading}
+              transaction={transaction}
+            />
+          ) : (
+            <div className='flex items-center justify-center h-screen'>
+              <Loader2 className='animate-spin w-12 h-12' />
+              <p className='text-center'>Carregando a operação...</p>
+            </div>
+          )
         ) : (
-          <div className='flex items-center justify-center h-screen'>
-            <Loader2 className='animate-spin w-12 h-12' />
-            <p className='text-center'>Carregando a operação...</p>
-          </div>
+          <Error />
         )}
       </CardContent>
     </Card>

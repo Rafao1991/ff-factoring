@@ -25,6 +25,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import useListCustomers from '@/hooks/api/customers/use-list-customers';
 import { cn } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
@@ -76,8 +77,9 @@ interface CustomerSelect {
   value: string;
 }
 
-export const transactionFormSchema = z.object({
-  customer: z
+const transactionFormSchema = z.object({
+  customerDocumentNumber: z.string(),
+  customerName: z
     .string({
       required_error: customerIsMandatory,
     })
@@ -113,43 +115,38 @@ export const transactionFormSchema = z.object({
 
 export default function TransactionForm({
   onSubmit,
+  isLoading,
   transaction,
 }: {
-  onSubmit: (values: z.infer<typeof transactionFormSchema>) => void;
+  onSubmit: (values: TransactionSchema) => void;
+  isLoading: boolean;
   transaction?: Transaction;
 }) {
+  const { data, isSuccess } = useListCustomers();
   const [customers, setCustomers] = useState<CustomerSelect[] | null>(null);
 
   useEffect(() => {
-    const fetchCustomers = async () => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/customers`
-      );
-      const { data } = await response.json();
-      const customers = (data as Customer[]).map<CustomerSelect>(
-        (customerData) => {
-          return {
-            label: customerData.name,
-            value: customerData.documentNumber,
-          };
-        }
-      );
+    if (!isSuccess) return;
+    const customers = data.map<CustomerSelect>((customerData) => {
+      return {
+        label: customerData.name,
+        value: customerData.documentNumber,
+      };
+    });
 
-      setCustomers(customers);
-    };
+    setCustomers(customers);
+  }, [isSuccess, data]);
 
-    fetchCustomers();
-  }, []);
-
-  const form = useForm<z.infer<typeof transactionFormSchema>>({
+  const form = useForm<TransactionSchema>({
     resolver: zodResolver(transactionFormSchema),
     defaultValues: transaction
       ? {
           amount: transaction.amount,
-          date: transaction.date,
-          dueDate: transaction.dueDate,
+          date: new Date(transaction.date),
+          dueDate: new Date(transaction.dueDate),
           type: transaction.type as TransactionType,
-          customer: transaction.customerName,
+          customerName: transaction.customerName,
+          customerDocumentNumber: transaction.customerDocumentNumber,
         }
       : {
           amount: 0,
@@ -197,7 +194,7 @@ export default function TransactionForm({
               )}
             />
             <FormField
-              name='customer'
+              name='customerName'
               control={form.control}
               render={({ field }) => (
                 <FormItem className='flex flex-col'>
@@ -232,7 +229,11 @@ export default function TransactionForm({
                                 value={customer.label}
                                 key={customer.value}
                                 onSelect={() => {
-                                  form.setValue('customer', customer.label);
+                                  form.setValue('customerName', customer.label);
+                                  form.setValue(
+                                    'customerDocumentNumber',
+                                    customer.value
+                                  );
                                 }}
                               >
                                 {customer.label}
@@ -334,7 +335,10 @@ export default function TransactionForm({
                 </FormItem>
               )}
             />
-            <Button type='submit' disabled={!form.formState.isDirty}>
+            <Button
+              type='submit'
+              disabled={!form.formState.isDirty || isLoading}
+            >
               Salvar
             </Button>
           </form>
@@ -348,3 +352,5 @@ export default function TransactionForm({
     </>
   );
 }
+
+export type TransactionSchema = z.infer<typeof transactionFormSchema>;

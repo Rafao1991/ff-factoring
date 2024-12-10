@@ -1,5 +1,7 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { isValid as isValidCPF } from './cpf';
+import { isValid as isValidCNPJ } from './cnpj';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -19,6 +21,14 @@ export function formatCpfCnpj(value: string) {
         .replace(/(\d{3})(\d)/, '$1.$2')
         .replace(/(\d{3})(\d)/, '$1/$2')
         .replace(/(\d{4})(\d)/, '$1-$2');
+}
+
+export function validateCpfCnpj(value: string) {
+  if (value.length === 11) return isValidCPF(value);
+
+  if (value.length === 14) return isValidCNPJ(value);
+
+  return false;
 }
 
 export function formatPhone(value: string) {

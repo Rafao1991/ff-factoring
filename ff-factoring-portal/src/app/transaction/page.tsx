@@ -9,186 +9,16 @@ import {
 } from '@/components/ui/card';
 import { DataTable } from '@/components/data-table';
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, ChevronRight } from 'lucide-react';
+import { ArrowUpDown, Check, ChevronRight, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import { Error } from '@/components/error';
 import { useRouter } from 'next/navigation';
 import { formatCpfCnpj } from '@/lib/utils';
-
-enum TransactionType {
-  Check = 'cheque',
-  Ticket = 'duplicata',
-}
-
-const customers: Customer[] = [
-  {
-    name: 'Rafael Sousa',
-    documentNumber: '12345678901',
-    emails: [],
-    phones: [],
-  },
-  {
-    name: 'João Silva',
-    documentNumber: '12345678000101',
-    emails: [],
-    phones: [],
-  },
-  {
-    name: 'Maria Silva',
-    documentNumber: '12345678901',
-    emails: [],
-    phones: [],
-  },
-  {
-    name: 'Pedro Sousa',
-    documentNumber: '12345678000101',
-    emails: [],
-    phones: [],
-  },
-];
-
-const transactions: Transaction[] = [
-  {
-    id: '1',
-    customerDocumentNumber: customers[0].documentNumber,
-    customerName: customers[0].name,
-    amount: 100,
-    date: new Date(2024, 6, 1),
-    dueDate: new Date(2024, 9, 1),
-    type: TransactionType.Check,
-    completed: true,
-  },
-  {
-    id: '2',
-    customerDocumentNumber: customers[1].documentNumber,
-    customerName: customers[1].name,
-    amount: 100,
-    date: new Date(2024, 9, 1),
-    dueDate: new Date(2024, 11, 1),
-    type: TransactionType.Ticket,
-    completed: true,
-  },
-  {
-    id: '3',
-    customerDocumentNumber: customers[2].documentNumber,
-    customerName: customers[2].name,
-    amount: 100,
-    date: new Date(2024, 10, 1),
-    dueDate: new Date(2025, 2, 1),
-    type: TransactionType.Check,
-    completed: false,
-  },
-  {
-    id: '4',
-    customerDocumentNumber: customers[3].documentNumber,
-    customerName: customers[3].name,
-    amount: 100,
-    date: new Date(2024, 11, 1),
-    dueDate: new Date(2025, 5, 1),
-    type: TransactionType.Ticket,
-    completed: false,
-  },
-  {
-    id: '5',
-    customerDocumentNumber: customers[2].documentNumber,
-    customerName: customers[2].name,
-    amount: 100,
-    date: new Date(2024, 11, 1),
-    dueDate: new Date(2025, 2, 1),
-    type: TransactionType.Check,
-    completed: false,
-  },
-  {
-    id: '6',
-    customerDocumentNumber: customers[1].documentNumber,
-    customerName: customers[1].name,
-    amount: 100,
-    date: new Date(2025, 1, 1),
-    dueDate: new Date(2025, 3, 1),
-    type: TransactionType.Ticket,
-    completed: false,
-  },
-  {
-    id: '7',
-    customerDocumentNumber: customers[3].documentNumber,
-    customerName: customers[3].name,
-    amount: 100,
-    date: new Date(2024, 11, 1),
-    dueDate: new Date(2025, 5, 1),
-    type: TransactionType.Ticket,
-    completed: false,
-  },
-  {
-    id: '8',
-    customerDocumentNumber: customers[2].documentNumber,
-    customerName: customers[2].name,
-    amount: 100,
-    date: new Date(2024, 10, 1),
-    dueDate: new Date(2025, 2, 1),
-    type: TransactionType.Check,
-    completed: false,
-  },
-  {
-    id: '9',
-    customerDocumentNumber: customers[1].documentNumber,
-    customerName: customers[1].name,
-    amount: 100,
-    date: new Date(2025, 1, 1),
-    dueDate: new Date(2025, 3, 1),
-    type: TransactionType.Ticket,
-    completed: false,
-  },
-  {
-    id: '10',
-    customerDocumentNumber: customers[0].documentNumber,
-    customerName: customers[0].name,
-    amount: 100,
-    date: new Date(2024, 6, 1),
-    dueDate: new Date(2024, 9, 1),
-    type: TransactionType.Check,
-    completed: true,
-  },
-  {
-    id: '11',
-    customerDocumentNumber: customers[1].documentNumber,
-    customerName: customers[1].name,
-    amount: 100,
-    date: new Date(2024, 9, 1),
-    dueDate: new Date(2024, 11, 1),
-    type: TransactionType.Ticket,
-    completed: true,
-  },
-  {
-    id: '12',
-    customerDocumentNumber: customers[2].documentNumber,
-    customerName: customers[2].name,
-    amount: 100,
-    date: new Date(2024, 10, 1),
-    dueDate: new Date(2025, 2, 1),
-    type: TransactionType.Check,
-    completed: false,
-  },
-  {
-    id: '13',
-    customerDocumentNumber: customers[3].documentNumber,
-    customerName: customers[3].name,
-    amount: 1000,
-    date: new Date(2024, 10, 1),
-    dueDate: new Date(2025, 2, 1),
-    type: TransactionType.Ticket,
-    completed: false,
-  },
-  {
-    id: '14',
-    customerDocumentNumber: customers[2].documentNumber,
-    customerName: customers[2].name,
-    amount: 100,
-    date: new Date(2024, 10, 1),
-    dueDate: new Date(2025, 2, 1),
-    type: TransactionType.Check,
-    completed: false,
-  },
-];
+import useListTransactions from '@/hooks/api/transactions/use-list-transactions';
+import useCompleteTransaction from '@/hooks/api/transactions/use-complete-transaction';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
 const filter = {
   placeholder: 'Filtrar pelo nome do cliente...',
@@ -202,6 +32,15 @@ const newTransactionButton = 'Nova operação';
 
 export default function Transactions() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const { data: transactions, isLoading, isError } = useListTransactions();
+  const { mutate: completeTransaction, isSuccess } = useCompleteTransaction();
+
+  useEffect(() => {
+    if (isSuccess) {
+      queryClient.invalidateQueries({ queryKey: ['listTransactions'] });
+    }
+  }, [isSuccess, queryClient]);
 
   const columns: ColumnDef<Transaction>[] = [
     {
@@ -327,7 +166,19 @@ export default function Transactions() {
       cell: ({ row }) => {
         const completed: boolean = row.getValue('completed');
 
-        return <>{completed ? 'Sim' : 'Não'}</>;
+        return (
+          <div className='flex items-center gap-2'>
+            <p>{completed ? 'Sim' : 'Não'}</p>
+            <Button
+              className='w-full'
+              variant='ghost'
+              disabled={Boolean(row.getValue('completed'))}
+              onClick={() => completeTransaction(row.getValue('id'))}
+            >
+              <Check />
+            </Button>
+          </div>
+        );
       },
     },
     {
@@ -339,12 +190,19 @@ export default function Transactions() {
           <Button
             className='w-full'
             variant='ghost'
-            onClick={() => router.push(`/transaction/detail?id=${row.id}`)}
+            onClick={() =>
+              router.push(`/transaction/detail?id=${row.getValue('id')}`)
+            }
           >
             <ChevronRight />
           </Button>
         );
       },
+    },
+    {
+      accessorKey: 'id',
+      header: '',
+      cell: '',
     },
   ];
 
@@ -366,7 +224,18 @@ export default function Transactions() {
         </div>
       </CardHeader>
       <CardContent>
-        <DataTable columns={columns} data={transactions} filter={filter} />
+        {!isError ? (
+          !isLoading && transactions ? (
+            <DataTable columns={columns} data={transactions} filter={filter} />
+          ) : (
+            <div className='flex items-center justify-center h-screen'>
+              <Loader2 className='animate-spin w-12 h-12' />
+              <p className='text-center'>Carregando a lista de operações...</p>
+            </div>
+          )
+        ) : (
+          <Error />
+        )}
       </CardContent>
     </Card>
   );

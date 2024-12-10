@@ -1,7 +1,7 @@
 'use client';
 
 import TransactionForm, {
-  transactionFormSchema,
+  TransactionSchema,
 } from '@/components/transaction/transaction-form';
 
 import {
@@ -11,17 +11,42 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-
-import { z } from 'zod';
+import useCreateTransaction from '@/hooks/api/transactions/use-create-transaction';
+import { toast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 const title = 'Nova operação';
 const description = 'Crie uma nova operação.';
 
 export default function NewTransaction() {
-  function onSubmit(values: z.infer<typeof transactionFormSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+  const router = useRouter();
+  const {
+    mutate: createTransaction,
+    isError: isCreationError,
+    isPending: isCreationLoading,
+    isSuccess: isCreationSuccess,
+    error: creationError,
+  } = useCreateTransaction();
+
+  useEffect(() => {
+    if (isCreationSuccess) {
+      router.back();
+    }
+  }, [isCreationSuccess, router]);
+
+  useEffect(() => {
+    if (isCreationError) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao criar a operação',
+        description: `Erro inesperado - ${creationError.message}`,
+      });
+    }
+  }, [isCreationError, creationError]);
+
+  function onSubmit(values: TransactionSchema) {
+    createTransaction(values);
   }
 
   return (
@@ -31,7 +56,7 @@ export default function NewTransaction() {
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <TransactionForm onSubmit={onSubmit} />
+        <TransactionForm onSubmit={onSubmit} isLoading={isCreationLoading} />
       </CardContent>
     </Card>
   );

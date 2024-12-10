@@ -13,7 +13,7 @@ import { formatCpfCnpj, formatPhone } from '@/lib/utils';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, ChevronRight, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import useListCustomers from '@/hooks/api/customers/use-list-customers';
 
 const filter = {
   placeholder: 'Filtrar pelo nome do cliente...',
@@ -27,20 +27,7 @@ const newTransactionButton = 'Novo cliente';
 
 export default function Customers() {
   const router = useRouter();
-  const [customers, setCustomers] = useState<Customer[]>([]);
-
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/customers`
-      );
-      const { data } = await response.json();
-
-      setCustomers(data);
-    };
-
-    fetchCustomers();
-  }, []);
+  const { data: customers } = useListCustomers();
 
   const columns: ColumnDef<Customer>[] = [
     {
