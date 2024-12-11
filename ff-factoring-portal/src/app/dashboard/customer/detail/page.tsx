@@ -11,20 +11,29 @@ import { Loader2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
 import useUpdateCustomer from '@/hooks/api/customers/use-update-customer';
+import { useAuth } from 'react-oidc-context';
+import { useQueryClient } from '@tanstack/react-query';
+import Loading from '@/components/loading';
 
 const title = 'Detalhe do cliente';
 
 function Customer() {
+  const auth = useAuth();
+  const queryClient = useQueryClient();
   const router = useRouter();
   const documentNumber = useSearchParams().get('documentNumber');
-  const { data: customer, isError, isLoading } = useGetCustomer(documentNumber);
+  const {
+    data: customer,
+    isError,
+    isLoading,
+  } = useGetCustomer(documentNumber, auth.user?.access_token || '');
   const {
     mutate: updateCustomer,
     isError: isUpdateError,
     isPending: isUpdateLoading,
     isSuccess: isUpdateSuccess,
     error: updateError,
-  } = useUpdateCustomer();
+  } = useUpdateCustomer(auth.user?.access_token || '');
 
   useEffect(() => {
     if (isUpdateSuccess) {
@@ -42,6 +51,14 @@ function Customer() {
     }
   }, [isUpdateError, updateError]);
 
+  useEffect(() => {
+    if (auth.isAuthenticated) {
+      queryClient.invalidateQueries({
+        queryKey: ['getCustomer', documentNumber],
+      });
+    }
+  }, [auth.isAuthenticated, queryClient, documentNumber]);
+
   const onSubmit = async (customer: CustomerSchema) => {
     if (!documentNumber) return;
     updateCustomer({ documentNumber, customer });
@@ -53,6 +70,10 @@ function Customer() {
       router.push('/dashboard/customer');
     }
     return null;
+  }
+
+  if (!auth.isAuthenticated) {
+    return <Loading />;
   }
 
   return (

@@ -121,7 +121,6 @@ export default function CustomerForm({
         <FormField
           name='documentNumber'
           control={form.control}
-          disabled={!!customer}
           render={({ field }) => (
             <FormItem>
               <FormLabel>{documentNumberTitle}</FormLabel>
@@ -130,6 +129,7 @@ export default function CustomerForm({
                   placeholder={documentNumberTitle}
                   maxLength={14}
                   minLength={11}
+                  disabled={!!customer}
                   {...field}
                 />
               </FormControl>

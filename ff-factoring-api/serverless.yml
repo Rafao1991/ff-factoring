@@ -15,6 +15,8 @@ stages:
     params:
       customersTableName: ${sls:stage}-${self:service}-customers
       transactionsTableName: ${sls:stage}-${self:service}-transactions
+      cognitoUserPoolId: us-east-1_0SiontoGi
+      cognitoUserPoolClientId: 1onbn5vq3buu1f5ijke3o1gnve
 
 resources:
   Resources:
@@ -164,9 +166,9 @@ provider:
       ApiAuthorizer:
         type: token
         identitySource: $request.header.Authorization
-        issuerUrl: https://cognito-idp.us-east-1.amazonaws.com/us-east-1_0SiontoGi
+        issuerUrl: https://cognito-idp.us-east-1.amazonaws.com/${param:cognitoUserPoolId}
         audience:
-          - 1onbn5vq3buu1f5ijke3o1gnve
+          - ${param:cognitoUserPoolClientId}
   logs:
     logFormat: JSON
     httpApi: true

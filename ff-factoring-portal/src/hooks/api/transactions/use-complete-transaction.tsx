@@ -1,10 +1,17 @@
 import { useMutation } from '@tanstack/react-query';
 
-const completeTransaction = async (id: string) => {
+const completeTransaction = async (id: string, token: string) => {
+  if (!token) {
+    throw new Error('Token is required');
+  }
+
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/transactions/${id}/complete`,
     {
       method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     }
   );
 
@@ -16,9 +23,9 @@ const completeTransaction = async (id: string) => {
   }
 };
 
-export default function useCompleteTransaction() {
+export default function useCompleteTransaction(token: string) {
   const mutation = useMutation({
-    mutationFn: (id: string) => completeTransaction(id),
+    mutationFn: (id: string) => completeTransaction(id, token),
   });
 
   return mutation;

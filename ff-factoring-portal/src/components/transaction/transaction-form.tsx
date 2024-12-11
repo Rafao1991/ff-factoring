@@ -28,10 +28,12 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import useListCustomers from '@/hooks/api/customers/use-list-customers';
 import { cn } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useAuth } from 'react-oidc-context';
 import { z } from 'zod';
 
 const today = new Date();
@@ -122,7 +124,9 @@ export default function TransactionForm({
   isLoading: boolean;
   transaction?: Transaction;
 }) {
-  const { data, isSuccess } = useListCustomers();
+  const auth = useAuth();
+  const queryClient = useQueryClient();
+  const { data, isSuccess } = useListCustomers(auth.user?.access_token || '');
   const [customers, setCustomers] = useState<CustomerSelect[] | null>(null);
 
   useEffect(() => {
@@ -136,6 +140,12 @@ export default function TransactionForm({
 
     setCustomers(customers);
   }, [isSuccess, data]);
+
+  useEffect(() => {
+    if (auth.isAuthenticated) {
+      queryClient.invalidateQueries({ queryKey: ['listCustomers'] });
+    }
+  }, [auth.isAuthenticated, queryClient]);
 
   const form = useForm<TransactionSchema>({
     resolver: zodResolver(transactionFormSchema),

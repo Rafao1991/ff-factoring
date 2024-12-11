@@ -11,20 +11,29 @@ import TransactionForm, {
 import useGetTransaction from '@/hooks/api/transactions/use-get-transaction';
 import useUpdateTransaction from '@/hooks/api/transactions/use-update-transaction';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from 'react-oidc-context';
+import { useQueryClient } from '@tanstack/react-query';
+import Loading from '@/components/loading';
 
 const title = 'Detalhe da operação';
 
 function Transaction() {
+  const auth = useAuth();
+  const queryClient = useQueryClient();
   const router = useRouter();
   const id = useSearchParams().get('id');
-  const { data: transaction, isError, isLoading } = useGetTransaction(id);
+  const {
+    data: transaction,
+    isError,
+    isLoading,
+  } = useGetTransaction(id, auth.user?.access_token || '');
   const {
     mutate: updateTransaction,
     isError: isUpdateError,
     isPending: isUpdateLoading,
     isSuccess: isUpdateSuccess,
     error: updateError,
-  } = useUpdateTransaction();
+  } = useUpdateTransaction(auth.user?.access_token || '');
 
   useEffect(() => {
     if (isUpdateSuccess) {
@@ -42,6 +51,12 @@ function Transaction() {
     }
   }, [isUpdateError, updateError]);
 
+  useEffect(() => {
+    if (auth.isAuthenticated) {
+      queryClient.invalidateQueries({ queryKey: ['getTransaction', id] });
+    }
+  }, [auth.isAuthenticated, queryClient, id]);
+
   function onSubmit(transaction: TransactionSchema) {
     if (!id) return;
     updateTransaction({ id, transaction });
@@ -53,6 +68,10 @@ function Transaction() {
       router.push('/dashboard/transaction');
     }
     return null;
+  }
+
+  if (!auth.isAuthenticated) {
+    return <Loading />;
   }
 
   return (

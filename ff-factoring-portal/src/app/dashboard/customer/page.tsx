@@ -14,6 +14,10 @@ import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, ChevronRight, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import useListCustomers from '@/hooks/api/customers/use-list-customers';
+import { useAuth } from 'react-oidc-context';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import Loading from '@/components/loading';
 
 const filter = {
   placeholder: 'Filtrar pelo nome do cliente...',
@@ -26,8 +30,16 @@ const description = 'Lista de clientes cadastrados.';
 const newTransactionButton = 'Novo cliente';
 
 export default function Customers() {
+  const auth = useAuth();
+  const queryClient = useQueryClient();
   const router = useRouter();
-  const { data: customers } = useListCustomers();
+  const { data: customers } = useListCustomers(auth.user?.access_token || '');
+
+  useEffect(() => {
+    if (auth.isAuthenticated) {
+      queryClient.invalidateQueries({ queryKey: ['listCustomers'] });
+    }
+  }, [auth.isAuthenticated, queryClient]);
 
   const columns: ColumnDef<Customer>[] = [
     {
@@ -119,6 +131,10 @@ export default function Customers() {
       },
     },
   ];
+
+  if (!auth.isAuthenticated) {
+    return <Loading />;
+  }
 
   return (
     <Card>

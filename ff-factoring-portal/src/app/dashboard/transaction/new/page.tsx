@@ -1,5 +1,6 @@
 'use client';
 
+import Loading from '@/components/loading';
 import TransactionForm, {
   TransactionSchema,
 } from '@/components/transaction/transaction-form';
@@ -15,11 +16,13 @@ import useCreateTransaction from '@/hooks/api/transactions/use-create-transactio
 import { toast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { useAuth } from 'react-oidc-context';
 
 const title = 'Nova operação';
 const description = 'Crie uma nova operação.';
 
 export default function NewTransaction() {
+  const auth = useAuth();
   const router = useRouter();
   const {
     mutate: createTransaction,
@@ -27,7 +30,7 @@ export default function NewTransaction() {
     isPending: isCreationLoading,
     isSuccess: isCreationSuccess,
     error: creationError,
-  } = useCreateTransaction();
+  } = useCreateTransaction(auth.user?.access_token || '');
 
   useEffect(() => {
     if (isCreationSuccess) {
@@ -47,6 +50,10 @@ export default function NewTransaction() {
 
   function onSubmit(values: TransactionSchema) {
     createTransaction(values);
+  }
+
+  if (!auth.isAuthenticated) {
+    return <Loading />;
   }
 
   return (

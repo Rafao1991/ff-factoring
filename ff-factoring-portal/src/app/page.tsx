@@ -1,7 +1,7 @@
 'use client';
 
 import { Error } from '@/components/error';
-import Loader from '@/components/loader';
+import Loading from '@/components/loading';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -27,7 +27,7 @@ export default function Home() {
   }, [auth.isAuthenticated, router]);
 
   if (auth.isLoading) {
-    return <Loader message='Carregando...' />;
+    return <Loading message='Carregando...' />;
   }
 
   if (auth.error) {

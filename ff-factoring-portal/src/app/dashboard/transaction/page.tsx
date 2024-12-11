@@ -19,6 +19,8 @@ import useListTransactions from '@/hooks/api/transactions/use-list-transactions'
 import useCompleteTransaction from '@/hooks/api/transactions/use-complete-transaction';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
+import { useAuth } from 'react-oidc-context';
+import Loading from '@/components/loading';
 
 const filter = {
   placeholder: 'Filtrar pelo nome do cliente...',
@@ -31,16 +33,23 @@ const description = 'Lista de operações.';
 const newTransactionButton = 'Nova operação';
 
 export default function Transactions() {
+  const auth = useAuth();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { data: transactions, isLoading, isError } = useListTransactions();
-  const { mutate: completeTransaction, isSuccess } = useCompleteTransaction();
+  const {
+    data: transactions,
+    isLoading,
+    isError,
+  } = useListTransactions(auth.user?.access_token || '');
+  const { mutate: completeTransaction, isSuccess } = useCompleteTransaction(
+    auth.user?.access_token || ''
+  );
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess || auth.isAuthenticated) {
       queryClient.invalidateQueries({ queryKey: ['listTransactions'] });
     }
-  }, [isSuccess, queryClient]);
+  }, [auth.isAuthenticated, isSuccess, queryClient]);
 
   const columns: ColumnDef<Transaction>[] = [
     {
@@ -207,6 +216,10 @@ export default function Transactions() {
       cell: '',
     },
   ];
+
+  if (!auth.isAuthenticated) {
+    return <Loading />;
+  }
 
   return (
     <Card>

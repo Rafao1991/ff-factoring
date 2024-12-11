@@ -21,7 +21,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  console.log({ cognitoAuthConfig });
   return (
     <html lang='en'>
       <head>

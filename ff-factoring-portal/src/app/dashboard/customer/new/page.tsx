@@ -3,6 +3,7 @@
 import CustomerForm, {
   CustomerSchema,
 } from '@/components/customer/customer-form';
+import Loading from '@/components/loading';
 
 import {
   Card,
@@ -15,11 +16,13 @@ import useCreateCustomer from '@/hooks/api/customers/use-create-customer';
 import { toast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { useAuth } from 'react-oidc-context';
 
 const title = 'Novo cliente';
 const description = 'Cadastre um novo cliente.';
 
 export default function NewCustomer() {
+  const auth = useAuth();
   const router = useRouter();
   const {
     mutate: createCustomer,
@@ -27,7 +30,7 @@ export default function NewCustomer() {
     isPending: isCreationLoading,
     isSuccess: isCreationSuccess,
     error: creationError,
-  } = useCreateCustomer();
+  } = useCreateCustomer(auth.user?.access_token || '');
 
   useEffect(() => {
     if (isCreationSuccess) {
@@ -48,6 +51,10 @@ export default function NewCustomer() {
   const onSubmit = async (customer: CustomerSchema) => {
     createCustomer(customer);
   };
+
+  if (!auth.isAuthenticated) {
+    return <Loading />;
+  }
 
   return (
     <Card>

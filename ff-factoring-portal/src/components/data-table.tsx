@@ -67,8 +67,6 @@ export function DataTable<TData, TValue>({
               (table.getColumn(filter.column)?.getFilterValue() as string) ?? ''
             }
             onChange={(event: { target: { value: string } }) => {
-              console.log(table.getColumn(filter.column));
-
               table
                 .getColumn(filter.column)
                 ?.setFilterValue(event.target.value);
