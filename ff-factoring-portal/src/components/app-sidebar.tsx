@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Sidebar,
   SidebarContent,
@@ -12,6 +14,7 @@ import {
 import { Label } from './ui/label';
 import { format } from 'date-fns';
 import { Separator } from './ui/separator';
+import { useAuth } from 'react-oidc-context';
 
 export function AppSidebar({
   items,
@@ -20,10 +23,17 @@ export function AppSidebar({
   items: SidebarItem[];
   logoutItem: SidebarItem;
 }) {
+  const auth = useAuth();
+
   return (
     <Sidebar>
       <SidebarHeader>
-        <Label className='py-2 font-semibold text-center'>FF Factoring</Label>
+        <Label className='pt-2 text-xl font-bold text-center'>
+          FF Factoring
+        </Label>
+        <Label className='pb-2 text-lg font-medium text-center'>
+          {auth.user?.profile.email}
+        </Label>
         <Label className='font-normal text-center'>
           {format(new Date(), 'PPP')}
         </Label>
@@ -38,7 +48,7 @@ export function AppSidebar({
                   <SidebarMenuButton asChild>
                     <a href={item.url}>
                       <item.icon />
-                      <span className='text-lg'>{item.title}</span>
+                      <span className='text-xl'>{item.title}</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -50,9 +60,9 @@ export function AppSidebar({
       <Separator className='w-11/12 my-2 mx-auto' />
       <SidebarFooter>
         <SidebarMenuButton asChild>
-          <a href={logoutItem.url}>
+          <a href={logoutItem.url} onClick={() => auth.removeUser()}>
             <logoutItem.icon />
-            <span className='text-lg'>{logoutItem.title}</span>
+            <span className='text-xl'>{logoutItem.title}</span>
           </a>
         </SidebarMenuButton>
       </SidebarFooter>

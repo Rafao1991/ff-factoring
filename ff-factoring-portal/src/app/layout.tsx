@@ -1,11 +1,8 @@
-import type { Metadata } from 'next';
+'use client';
+
 import localFont from 'next/font/local';
 import './globals.css';
-
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/app-sidebar';
-import { Files, Home, LogOut, Users, Wallet } from 'lucide-react';
-import { Toaster } from '@/components/ui/toaster';
+import { AuthProvider } from 'react-oidc-context';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -18,37 +15,12 @@ const geistMono = localFont({
   weight: '100 900',
 });
 
-export const metadata: Metadata = {
-  title: 'FF Factoring',
-};
-
-const items: SidebarItem[] = [
-  {
-    title: 'Home',
-    url: '/',
-    icon: Home,
-  },
-  {
-    title: 'Clientes',
-    url: '/customer',
-    icon: Users,
-  },
-  {
-    title: 'Operações',
-    url: '/transaction',
-    icon: Wallet,
-  },
-  {
-    title: 'Relatórios',
-    url: '/report',
-    icon: Files,
-  },
-];
-
-const logoutItem: SidebarItem = {
-  title: 'Sair',
-  url: '/logout',
-  icon: LogOut,
+const cognitoAuthConfig = {
+  authority: 'https://cognito-idp.us-east-1.amazonaws.com/us-east-1_0SiontoGi',
+  client_id: '1onbn5vq3buu1f5ijke3o1gnve',
+  redirect_uri: 'http://localhost:3000',
+  response_type: 'code',
+  scope: 'phone openid email',
 };
 
 export default function RootLayout({
@@ -58,16 +30,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en'>
+      <head>
+        <title>FF Factoring</title>
+        <meta name='viewport' content='width=device-width, initial-scale=1' />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SidebarProvider open={true}>
-          <AppSidebar items={items} logoutItem={logoutItem} />
-          <div className='container mx-auto p-4 md:p-6 lg:p-8 xl:p-12'>
-            {children}
-          </div>
-        </SidebarProvider>
-        <Toaster />
+        <AuthProvider {...cognitoAuthConfig}>{children}</AuthProvider>
       </body>
     </html>
   );

@@ -107,7 +107,7 @@ export default function Customers() {
             variant='ghost'
             onClick={() =>
               router.push(
-                `/customer/detail?documentNumber=${row.getValue(
+                `/dashboard/customer/detail?documentNumber=${row.getValue(
                   'documentNumber'
                 )}`
               )
@@ -131,7 +131,7 @@ export default function Customers() {
           <Button
             variant='default'
             size='lg'
-            onClick={() => router.push('/customer/new')}
+            onClick={() => router.push('/dashboard/customer/new')}
           >
             {newTransactionButton}
           </Button>

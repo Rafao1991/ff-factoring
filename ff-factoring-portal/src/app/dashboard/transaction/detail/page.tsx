@@ -1,30 +1,30 @@
 'use client';
 
-import CustomerForm, {
-  CustomerSchema,
-} from '@/components/customer/customer-form';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Error } from '@/components/error';
-import useGetCustomer from '@/hooks/api/customers/use-get-customer';
-import { toast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
-import useUpdateCustomer from '@/hooks/api/customers/use-update-customer';
+import { Loader2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Error } from '@/components/error';
+import TransactionForm, {
+  TransactionSchema,
+} from '@/components/transaction/transaction-form';
+import useGetTransaction from '@/hooks/api/transactions/use-get-transaction';
+import useUpdateTransaction from '@/hooks/api/transactions/use-update-transaction';
+import { toast } from '@/hooks/use-toast';
 
-const title = 'Detalhe do cliente';
+const title = 'Detalhe da operação';
 
-function Customer() {
+function Transaction() {
   const router = useRouter();
-  const documentNumber = useSearchParams().get('documentNumber');
-  const { data: customer, isError, isLoading } = useGetCustomer(documentNumber);
+  const id = useSearchParams().get('id');
+  const { data: transaction, isError, isLoading } = useGetTransaction(id);
   const {
-    mutate: updateCustomer,
+    mutate: updateTransaction,
     isError: isUpdateError,
     isPending: isUpdateLoading,
     isSuccess: isUpdateSuccess,
     error: updateError,
-  } = useUpdateCustomer();
+  } = useUpdateTransaction();
 
   useEffect(() => {
     if (isUpdateSuccess) {
@@ -36,21 +36,21 @@ function Customer() {
     if (isUpdateError) {
       toast({
         variant: 'destructive',
-        title: 'Erro ao criar o cliente',
+        title: 'Erro ao criar a operação',
         description: `Erro inesperado - ${updateError.message}`,
       });
     }
   }, [isUpdateError, updateError]);
 
-  const onSubmit = async (customer: CustomerSchema) => {
-    if (!documentNumber) return;
-    updateCustomer({ documentNumber, customer });
-  };
+  function onSubmit(transaction: TransactionSchema) {
+    if (!id) return;
+    updateTransaction({ id, transaction });
+  }
 
   // Redirect to the transaction page if the id is not found
-  if (!documentNumber) {
+  if (!id) {
     if (typeof window !== 'undefined') {
-      router.push('/customer');
+      router.push('/dashboard/transaction');
     }
     return null;
   }
@@ -62,16 +62,16 @@ function Customer() {
       </CardHeader>
       <CardContent>
         {!isError ? (
-          !isLoading && customer ? (
-            <CustomerForm
+          !isLoading && transaction ? (
+            <TransactionForm
               onSubmit={onSubmit}
               isLoading={isUpdateLoading}
-              customer={customer}
+              transaction={transaction}
             />
           ) : (
             <div className='flex items-center justify-center h-screen'>
               <Loader2 className='animate-spin w-12 h-12' />
-              <p className='text-center'>Carregando o cliente...</p>
+              <p className='text-center'>Carregando a operação...</p>
             </div>
           )
         ) : (
@@ -82,10 +82,10 @@ function Customer() {
   );
 }
 
-export default function CustomerWrapper() {
+export default function TransactionWrapper() {
   return (
     <Suspense fallback={<Loader2 className='animate-spin' />}>
-      <Customer />
+      <Transaction />
     </Suspense>
   );
 }

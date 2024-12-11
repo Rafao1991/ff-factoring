@@ -191,7 +191,9 @@ export default function Transactions() {
             className='w-full'
             variant='ghost'
             onClick={() =>
-              router.push(`/transaction/detail?id=${row.getValue('id')}`)
+              router.push(
+                `/dashboard/transaction/detail?id=${row.getValue('id')}`
+              )
             }
           >
             <ChevronRight />
@@ -217,7 +219,7 @@ export default function Transactions() {
           <Button
             variant='default'
             size='lg'
-            onClick={() => router.push('/transaction/new')}
+            onClick={() => router.push('/dashboard/transaction/new')}
           >
             {newTransactionButton}
           </Button>
