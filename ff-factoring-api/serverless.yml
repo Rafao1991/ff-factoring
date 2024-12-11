@@ -153,20 +153,37 @@ resources:
 
 provider:
   name: aws
-  architecture: x86_64
-  runtime: nodejs20.x
-  timeout: 10
-  memorySize: 128
+  stackName: ${sls:stage}-${self:service}-stack
+  deploymentMethod: changesets
+  httpApi:
+    name: ${sls:stage}-${self:service}-api
+    cors: true
+    metrics: true
+    useProviderTags: true
+    authorizers:
+      ApiAuthorizer:
+        type: token
+        identitySource: $request.header.Authorization
+        issuerUrl: https://cognito-idp.us-east-1.amazonaws.com/us-east-1_0SiontoGi
+        audience:
+          - 1onbn5vq3buu1f5ijke3o1gnve
   logs:
     logFormat: JSON
     httpApi: true
-  httpApi:
-    metrics: true
   tracing:
     lambda: true
+    apiGateway: true
   tags:
     service: ${self:service}
     stage: ${sls:stage}
+  stackTags:
+    service: ${self:service}
+    stage: ${sls:stage}
+  architecture: arm64
+  runtime: nodejs20.x
+  timeout: 6
+  memorySize: 128
+  logRetentionInDays: 7
   environment:
     CUSTOMERS_TABLE_NAME: ${param:customersTableName}
     TRANSACTIONS_TABLE_NAME: ${param:transactionsTableName}
@@ -193,6 +210,8 @@ functions:
       - httpApi:
           path: /customers
           method: post
+          authorizer:
+            name: ApiAuthorizer
   updateCustomer:
     name: ${sls:stage}-${self:service}-updateCustomer
     handler: src/index.updateCustomerHandler
@@ -200,6 +219,8 @@ functions:
       - httpApi:
           path: /customers/{documentNumber}
           method: put
+          authorizer:
+            name: ApiAuthorizer
   listCustomers:
     name: ${sls:stage}-${self:service}-listCustomers
     handler: src/index.listCustomersHandler
@@ -207,6 +228,8 @@ functions:
       - httpApi:
           path: /customers
           method: get
+          authorizer:
+            name: ApiAuthorizer
   getCustomer:
     name: ${sls:stage}-${self:service}-getCustomer
     handler: src/index.getCustomerHandler
@@ -214,6 +237,8 @@ functions:
       - httpApi:
           path: /customers/{documentNumber}
           method: get
+          authorizer:
+            name: ApiAuthorizer
   createTransaction:
     name: ${sls:stage}-${self:service}-createTransaction
     handler: src/index.createTransactionHandler
@@ -221,6 +246,8 @@ functions:
       - httpApi:
           path: /transactions
           method: post
+          authorizer:
+            name: ApiAuthorizer
   updateTransaction:
     name: ${sls:stage}-${self:service}-updateTransaction
     handler: src/index.updateTransactionHandler
@@ -228,6 +255,8 @@ functions:
       - httpApi:
           path: /transactions/{id}
           method: put
+          authorizer:
+            name: ApiAuthorizer
   completeTransaction:
     name: ${sls:stage}-${self:service}-completeTransaction
     handler: src/index.completeTransactionHandler
@@ -235,6 +264,8 @@ functions:
       - httpApi:
           path: /transactions/{id}/complete
           method: put
+          authorizer:
+            name: ApiAuthorizer
   listTransactions:
     name: ${sls:stage}-${self:service}-listTransactions
     handler: src/index.listTransactionsHandler
@@ -242,6 +273,8 @@ functions:
       - httpApi:
           path: /transactions
           method: get
+          authorizer:
+            name: ApiAuthorizer
   getTransaction:
     name: ${sls:stage}-${self:service}-getTransaction
     handler: src/index.getTransactionHandler
@@ -249,6 +282,8 @@ functions:
       - httpApi:
           path: /transactions/{id}
           method: get
+          authorizer:
+            name: ApiAuthorizer
 
 plugins:
   - serverless-offline

@@ -4,11 +4,6 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/toaster';
 import { Files, Home, LogOut, Users, Wallet } from 'lucide-react';
 
-const clientId = '1onbn5vq3buu1f5ijke3o1gnve';
-const logoutUri = 'http://localhost:3000';
-const cognitoDomain =
-  'https://us-east-10siontogi.auth.us-east-1.amazoncognito.com';
-
 export default function DashboardLayout({
   children,
 }: Readonly<{
@@ -37,11 +32,15 @@ export default function DashboardLayout({
     },
   ];
 
+  const logoutUrl = `${
+    process.env.NEXT_PUBLIC_COGNITO_DOMAIN
+  }/logout?client_id=${
+    process.env.NEXT_PUBLIC_CLIENT_ID
+  }&logout_uri=${encodeURIComponent(process.env.NEXT_PUBLIC_LOGOUT_URI || '')}`;
+
   const logoutItem: SidebarItem = {
     title: 'Sair',
-    url: `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
-      logoutUri
-    )}`,
+    url: logoutUrl,
     icon: LogOut,
   };
 

@@ -31,6 +31,9 @@ export function AppSidebar({
         <Label className='pt-2 text-xl font-bold text-center'>
           FF Factoring
         </Label>
+        <Label className='text-lg font-medium text-center'>
+          {`${auth.user?.profile.given_name} ${auth.user?.profile.family_name}`}
+        </Label>
         <Label className='pb-2 text-lg font-medium text-center'>
           {auth.user?.profile.email}
         </Label>

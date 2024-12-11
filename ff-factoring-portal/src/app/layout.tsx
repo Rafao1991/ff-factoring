@@ -3,6 +3,7 @@
 import localFont from 'next/font/local';
 import './globals.css';
 import { AuthProvider } from 'react-oidc-context';
+import { cognitoAuthConfig } from '@/lib/auth';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -15,19 +16,12 @@ const geistMono = localFont({
   weight: '100 900',
 });
 
-const cognitoAuthConfig = {
-  authority: 'https://cognito-idp.us-east-1.amazonaws.com/us-east-1_0SiontoGi',
-  client_id: '1onbn5vq3buu1f5ijke3o1gnve',
-  redirect_uri: 'http://localhost:3000',
-  response_type: 'code',
-  scope: 'phone openid email',
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  console.log({ cognitoAuthConfig });
   return (
     <html lang='en'>
       <head>

@@ -3,6 +3,13 @@
 import { Error } from '@/components/error';
 import Loader from '@/components/loader';
 import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useAuth } from 'react-oidc-context';
@@ -10,18 +17,6 @@ import { useAuth } from 'react-oidc-context';
 export default function Home() {
   const auth = useAuth();
   const router = useRouter();
-
-  const signOutRedirect = () => {
-    const clientId = '1onbn5vq3buu1f5ijke3o1gnve';
-    const logoutUri = 'http://localhost:3000';
-    const cognitoDomain =
-      'https://us-east-10siontogi.auth.us-east-1.amazoncognito.com';
-    router.push(
-      `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
-        logoutUri
-      )}`
-    );
-  };
 
   useEffect(() => {
     if (auth.isAuthenticated) {
@@ -41,9 +36,22 @@ export default function Home() {
   }
 
   return (
-    <div>
-      <Button onClick={() => auth.signinRedirect()}>Sign in</Button>
-      <Button onClick={() => signOutRedirect()}>Sign out</Button>
+    <div className='w-6/12 mx-auto p-4 md:p-6 lg:p-8 xl:p-12 text-center'>
+      <Card className='w-6/12 mx-auto'>
+        <CardHeader>
+          <CardTitle className='text-xl'>FF Factoring</CardTitle>
+          <CardDescription className='text-xl'>Seja bem-vindo!</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            className='w-full py-6 text-xl'
+            size='lg'
+            onClick={() => auth.signinRedirect()}
+          >
+            Entrar
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }
