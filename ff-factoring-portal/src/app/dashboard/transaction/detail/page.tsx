@@ -1,8 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Error } from '@/components/error';
 import TransactionForm, {
@@ -13,11 +12,11 @@ import useUpdateTransaction from '@/hooks/api/transactions/use-update-transactio
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from 'react-oidc-context';
 import { useQueryClient } from '@tanstack/react-query';
-import Loading from '@/components/loading';
+import { Loading } from '@/components/loading';
 
 const title = 'Detalhe da operação';
 
-function Transaction() {
+export default function Transaction() {
   const auth = useAuth();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -88,23 +87,12 @@ function Transaction() {
               transaction={transaction}
             />
           ) : (
-            <div className='flex items-center justify-center h-screen'>
-              <Loader2 className='animate-spin w-12 h-12' />
-              <p className='text-center'>Carregando a operação...</p>
-            </div>
+            <Loading />
           )
         ) : (
           <Error />
         )}
       </CardContent>
     </Card>
-  );
-}
-
-export default function TransactionWrapper() {
-  return (
-    <Suspense fallback={<Loader2 className='animate-spin' />}>
-      <Transaction />
-    </Suspense>
   );
 }

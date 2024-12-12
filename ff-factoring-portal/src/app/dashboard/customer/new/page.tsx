@@ -3,7 +3,7 @@
 import CustomerForm, {
   CustomerSchema,
 } from '@/components/customer/customer-form';
-import Loading from '@/components/loading';
+import { Loading } from '@/components/loading';
 
 import {
   Card,

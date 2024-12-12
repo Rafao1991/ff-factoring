@@ -30,7 +30,7 @@ import { cn } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from 'lucide-react';
+import { CalendarIcon, Check, ChevronsUpDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from 'react-oidc-context';
@@ -166,7 +166,7 @@ export default function TransactionForm({
 
   return (
     <>
-      {customers ? (
+      {customers && (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
             <FormField
@@ -353,11 +353,6 @@ export default function TransactionForm({
             </Button>
           </form>
         </Form>
-      ) : (
-        <div className='flex items-center justify-center h-screen'>
-          <Loader2 className='animate-spin w-12 h-12' />
-          <p className='text-center'>Carregando clientes...</p>
-        </div>
       )}
     </>
   );

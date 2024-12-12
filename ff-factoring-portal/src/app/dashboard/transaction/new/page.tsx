@@ -1,6 +1,6 @@
 'use client';
 
-import Loading from '@/components/loading';
+import { Loading } from '@/components/loading';
 import TransactionForm, {
   TransactionSchema,
 } from '@/components/transaction/transaction-form';

@@ -9,15 +9,16 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { DataTable } from '@/components/data-table';
+import { Error } from '@/components/error';
+import { Loading } from '@/components/loading';
+import useListCustomers from '@/hooks/api/customers/use-list-customers';
 import { formatCpfCnpj, formatPhone } from '@/lib/utils';
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, ChevronRight, Loader2 } from 'lucide-react';
+import { ArrowUpDown, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import useListCustomers from '@/hooks/api/customers/use-list-customers';
 import { useAuth } from 'react-oidc-context';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import Loading from '@/components/loading';
 
 const filter = {
   placeholder: 'Filtrar pelo nome do cliente...',
@@ -33,7 +34,11 @@ export default function Customers() {
   const auth = useAuth();
   const queryClient = useQueryClient();
   const router = useRouter();
-  const { data: customers } = useListCustomers(auth.user?.access_token || '');
+  const {
+    data: customers,
+    isLoading,
+    isError,
+  } = useListCustomers(auth.user?.access_token || '');
 
   useEffect(() => {
     if (auth.isAuthenticated) {
@@ -137,32 +142,35 @@ export default function Customers() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className='flex items-center justify-between space-x-2'>
-          <div className='flex flex-col space-y-1.5'>
-            <CardTitle>{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
-          </div>
-          <Button
-            variant='default'
-            size='lg'
-            onClick={() => router.push('/dashboard/customer/new')}
-          >
-            {newTransactionButton}
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {customers ? (
-          <DataTable columns={columns} data={customers} filter={filter} />
+    <>
+      {!isError ? (
+        !isLoading && customers ? (
+          <Card>
+            <CardHeader>
+              <div className='flex items-center justify-between space-x-2'>
+                <div className='flex flex-col space-y-1.5'>
+                  <CardTitle>{title}</CardTitle>
+                  <CardDescription>{description}</CardDescription>
+                </div>
+                <Button
+                  variant='default'
+                  size='lg'
+                  onClick={() => router.push('/dashboard/customer/new')}
+                >
+                  {newTransactionButton}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <DataTable columns={columns} data={customers} filter={filter} />
+            </CardContent>
+          </Card>
         ) : (
-          <div className='flex items-center justify-center h-screen'>
-            <Loader2 className='animate-spin w-12 h-12' />
-            <p className='text-center'>Carregando a lista de clientes...</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          <Loading />
+        )
+      ) : (
+        <Error />
+      )}
+    </>
   );
 }

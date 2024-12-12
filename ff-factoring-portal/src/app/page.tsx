@@ -1,7 +1,7 @@
 'use client';
 
 import { Error } from '@/components/error';
-import Loading from '@/components/loading';
+import { Loading } from '@/components/loading';
 import { Button } from '@/components/ui/button';
 import {
   Card,

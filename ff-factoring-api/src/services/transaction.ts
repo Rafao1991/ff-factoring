@@ -10,6 +10,7 @@ import {
   ScanCommandInput,
   ScanCommandOutput,
 } from '@aws-sdk/lib-dynamodb';
+import { format } from 'date-fns';
 
 const transactionsTableName = getTransactionsTableName();
 
@@ -29,7 +30,7 @@ export const scanTransactions = async (): Promise<Transaction[]> => {
       action: 'scanTransactions',
       input,
       command,
-      response,
+      response: JSON.stringify(response, null, 4),
     });
 
     if (!response.Items) {
@@ -150,6 +151,70 @@ export const putTransaction = async (transaction: Transaction) => {
       input,
       command,
     });
+  } catch (error) {
+    console.error({
+      service: 'customer',
+      action: 'scanCustomers',
+      error,
+    });
+    throw error;
+  } finally {
+    console.info({
+      service: 'customer',
+      action: 'scanCustomers',
+      message: 'DynamoDB client closed',
+    });
+
+    client.destroy();
+    docClient.destroy();
+  }
+};
+
+export const getTransactionsByDateRange = async (
+  startDate: Date,
+  endDate: Date
+): Promise<Transaction[]> => {
+  const { client, docClient } = getDynamoDB();
+
+  try {
+    const input: ScanCommandInput = {
+      TableName: transactionsTableName,
+      ConsistentRead: false,
+      FilterExpression: '#date BETWEEN :startDate AND :endDate',
+      ExpressionAttributeNames: {
+        '#date': 'date',
+      },
+      ExpressionAttributeValues: {
+        ':startDate': format(startDate, 'yyyy-MM-dd'),
+        ':endDate': format(endDate, 'yyyy-MM-dd'),
+      },
+    };
+    const command = new ScanCommand(input);
+    const response: ScanCommandOutput = await docClient.send(command);
+    console.info({
+      service: 'transaction',
+      action: 'getTransactionByDate',
+      input,
+      command,
+      response,
+    });
+
+    if (!response.Items) {
+      return [];
+    }
+
+    const transactions: Transaction[] = response.Items.map((item) => ({
+      id: item.id,
+      customerDocumentNumber: item.customerDocumentNumber,
+      customerName: item.customerName,
+      amount: item.amount,
+      date: item.date,
+      dueDate: item.dueDate,
+      type: item.type,
+      completed: item.completed,
+    }));
+
+    return transactions;
   } catch (error) {
     console.error({
       service: 'customer',

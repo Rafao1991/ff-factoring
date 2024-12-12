@@ -9,10 +9,11 @@ import {
 } from '@/components/ui/card';
 import { DataTable } from '@/components/data-table';
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, Check, ChevronRight, Loader2 } from 'lucide-react';
+import { ArrowUpDown, Check, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Error } from '@/components/error';
+import { Loading } from '@/components/loading';
 import { useRouter } from 'next/navigation';
 import { formatCpfCnpj } from '@/lib/utils';
 import useListTransactions from '@/hooks/api/transactions/use-list-transactions';
@@ -20,7 +21,6 @@ import useCompleteTransaction from '@/hooks/api/transactions/use-complete-transa
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useAuth } from 'react-oidc-context';
-import Loading from '@/components/loading';
 
 const filter = {
   placeholder: 'Filtrar pelo nome do cliente...',
@@ -222,36 +222,39 @@ export default function Transactions() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className='flex items-center justify-between space-x-2'>
-          <div className='flex flex-col space-y-1.5'>
-            <CardTitle>{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
-          </div>
-          <Button
-            variant='default'
-            size='lg'
-            onClick={() => router.push('/dashboard/transaction/new')}
-          >
-            {newTransactionButton}
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {!isError ? (
-          !isLoading && transactions ? (
-            <DataTable columns={columns} data={transactions} filter={filter} />
-          ) : (
-            <div className='flex items-center justify-center h-screen'>
-              <Loader2 className='animate-spin w-12 h-12' />
-              <p className='text-center'>Carregando a lista de operações...</p>
-            </div>
-          )
+    <>
+      {!isError ? (
+        !isLoading && transactions ? (
+          <Card>
+            <CardHeader>
+              <div className='flex items-center justify-between space-x-2'>
+                <div className='flex flex-col space-y-1.5'>
+                  <CardTitle>{title}</CardTitle>
+                  <CardDescription>{description}</CardDescription>
+                </div>
+                <Button
+                  variant='default'
+                  size='lg'
+                  onClick={() => router.push('/dashboard/transaction/new')}
+                >
+                  {newTransactionButton}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <DataTable
+                columns={columns}
+                data={transactions}
+                filter={filter}
+              />
+            </CardContent>
+          </Card>
         ) : (
-          <Error />
-        )}
-      </CardContent>
-    </Card>
+          <Loading />
+        )
+      ) : (
+        <Error />
+      )}
+    </>
   );
 }

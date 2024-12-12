@@ -7,17 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Error } from '@/components/error';
 import useGetCustomer from '@/hooks/api/customers/use-get-customer';
 import { toast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect } from 'react';
+import { useEffect } from 'react';
 import useUpdateCustomer from '@/hooks/api/customers/use-update-customer';
 import { useAuth } from 'react-oidc-context';
 import { useQueryClient } from '@tanstack/react-query';
-import Loading from '@/components/loading';
+import { Loading } from '@/components/loading';
 
 const title = 'Detalhe do cliente';
 
-function Customer() {
+export default function Customer() {
   const auth = useAuth();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -90,23 +89,12 @@ function Customer() {
               customer={customer}
             />
           ) : (
-            <div className='flex items-center justify-center h-screen'>
-              <Loader2 className='animate-spin w-12 h-12' />
-              <p className='text-center'>Carregando o cliente...</p>
-            </div>
+            <Loading />
           )
         ) : (
           <Error />
         )}
       </CardContent>
     </Card>
-  );
-}
-
-export default function CustomerWrapper() {
-  return (
-    <Suspense fallback={<Loader2 className='animate-spin' />}>
-      <Customer />
-    </Suspense>
   );
 }

@@ -14,3 +14,5 @@ export {
   listTransactionsHandler,
   updateTransactionHandler,
 } from '@/handlers/transaction';
+
+export { lastSixMonthsEarningsHandler } from '@/handlers/report';

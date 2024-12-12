@@ -1,8 +1,12 @@
 'use client';
+
 import { AppSidebar } from '@/components/app-sidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/toaster';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Files, Home, LogOut, Users, Wallet } from 'lucide-react';
+
+const queryClient = new QueryClient();
 
 export default function DashboardLayout({
   children,
@@ -49,7 +53,9 @@ export default function DashboardLayout({
       <SidebarProvider open={true}>
         <AppSidebar items={items} logoutItem={logoutItem} />
         <div className='container mx-auto p-4 md:p-6 lg:p-8 xl:p-12'>
-          {children}
+          <QueryClientProvider client={queryClient}>
+            {children}
+          </QueryClientProvider>
         </div>
       </SidebarProvider>
       <Toaster />

@@ -1,7 +1,6 @@
 'use client';
 
-import { TrendingUp } from 'lucide-react';
-import { CartesianGrid, Line, LineChart, XAxis } from 'recharts';
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
 
 import {
   Card,
@@ -17,31 +16,53 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-const chartData = [
-  { month: 'January', desktop: 186 },
-  { month: 'February', desktop: 305 },
-  { month: 'March', desktop: 237 },
-  { month: 'April', desktop: 73 },
-  { month: 'May', desktop: 209 },
-  { month: 'June', desktop: 214 },
-];
+import { format } from 'date-fns';
 
-const chartConfig = {
-  desktop: {
-    label: 'Desktop',
-    color: 'hsl(var(--chart-1))',
-  },
-} satisfies ChartConfig;
+interface LineChartSimpleProps {
+  title: string;
+  label: string;
+  footer: string;
+  startDate: Date;
+  endDate: Date;
+  totalEarningsByMonth: Record<string, TotalEarnings>;
+}
 
-export function LineChartSimple() {
+export function LineChartSimple({
+  title,
+  label,
+  footer,
+  startDate,
+  endDate,
+  totalEarningsByMonth,
+}: LineChartSimpleProps) {
+  const chartData: {
+    month: string;
+    value: number;
+  }[] = [];
+
+  Object.keys(totalEarningsByMonth).forEach((month) => {
+    const monthData = totalEarningsByMonth[month];
+    chartData.push({
+      month: format(new Date().setMonth(Number(month) - 1), 'LLLL'),
+      value: monthData.total,
+    });
+  });
+
+  const chartConfig: ChartConfig = {
+    value: {
+      label: label,
+      color: 'hsl(var(--chart-1))',
+    },
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Line Chart</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+    <Card className='flex flex-col'>
+      <CardHeader className='items-center pb-0'>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{`${startDate} - ${endDate}`}</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
+        <ChartContainer config={chartConfig} className='min-h-40 max-h-80'>
           <LineChart
             accessibilityLayer
             data={chartData}
@@ -58,26 +79,32 @@ export function LineChartSimple() {
               tickMargin={8}
               tickFormatter={(value) => value.slice(0, 3)}
             />
+            <YAxis
+              dataKey={'value'}
+              tickLine={false}
+              tickMargin={8}
+              axisLine={false}
+              tickFormatter={(value) =>
+                `R$ ${value > 1000 ? `${(value / 1000).toFixed(1)}K` : value}`
+              }
+            />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent hideLabel />}
             />
             <Line
-              dataKey='desktop'
-              type='natural'
-              stroke='var(--color-desktop)'
+              dataKey='value'
+              type='monotone'
+              stroke='var(--color-value)'
               strokeWidth={2}
               dot={false}
             />
           </LineChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className='flex-col items-start gap-2 text-sm'>
-        <div className='flex gap-2 font-medium leading-none'>
-          Trending up by 5.2% this month <TrendingUp className='h-4 w-4' />
-        </div>
-        <div className='leading-none text-muted-foreground'>
-          Showing total visitors for the last 6 months
+      <CardFooter className='mx-auto my-4 md:my-6 lg:my-8 text-sm'>
+        <div className='font-medium leading-none text-muted-foreground'>
+          {footer}
         </div>
       </CardFooter>
     </Card>

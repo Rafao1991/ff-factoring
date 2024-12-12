@@ -1,7 +1,6 @@
 'use client';
 
-import { TrendingUp } from 'lucide-react';
-import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 
 import {
   Card,
@@ -17,60 +16,91 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import { format } from 'date-fns';
 
-const chartData = [
-  { month: 'January', desktop: 186, mobile: 80 },
-  { month: 'February', desktop: 305, mobile: 200 },
-  { month: 'March', desktop: 237, mobile: 120 },
-  { month: 'April', desktop: 73, mobile: 190 },
-  { month: 'May', desktop: 209, mobile: 130 },
-  { month: 'June', desktop: 214, mobile: 140 },
-];
+interface BarChartMultipleProps {
+  title: string;
+  label1: string;
+  label2: string;
+  footer: string;
+  startDate: Date;
+  endDate: Date;
+  totalEarningsByMonth: Record<string, TotalEarnings>;
+}
 
-const chartConfig = {
-  desktop: {
-    label: 'Desktop',
-    color: 'hsl(var(--chart-1))',
-  },
-  mobile: {
-    label: 'Mobile',
-    color: 'hsl(var(--chart-2))',
-  },
-} satisfies ChartConfig;
+export function BarChartMultiple({
+  startDate,
+  endDate,
+  title,
+  label1,
+  label2,
+  footer,
+  totalEarningsByMonth,
+}: BarChartMultipleProps) {
+  const chartData: {
+    month: string;
+    value1: number;
+    value2: number;
+  }[] = [];
 
-export function BarChartMultiple() {
+  Object.keys(totalEarningsByMonth).forEach((month) => {
+    const monthData = totalEarningsByMonth[month];
+    chartData.push({
+      month: format(new Date().setMonth(Number(month) - 1), 'LLLL'),
+      value1: monthData.check,
+      value2: monthData.ticket,
+    });
+  });
+
+  const chartConfig: ChartConfig = {
+    value1: {
+      label: label1,
+      color: 'hsl(var(--chart-1))',
+    },
+    value2: {
+      label: label2,
+      color: 'hsl(var(--chart-2))',
+    },
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Bar Chart - Multiple</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+    <Card className='flex flex-col'>
+      <CardHeader className='items-center pb-0'>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{`${startDate} - ${endDate}`}</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
+        <ChartContainer config={chartConfig} className='min-h-40 max-h-80'>
           <BarChart accessibilityLayer data={chartData}>
             <CartesianGrid vertical={false} />
             <XAxis
               dataKey='month'
               tickLine={false}
-              tickMargin={10}
+              tickMargin={8}
               axisLine={false}
               tickFormatter={(value) => value.slice(0, 3)}
+            />
+            <YAxis
+              dataKey={'value1'}
+              tickLine={false}
+              tickMargin={8}
+              axisLine={false}
+              tickFormatter={(value) =>
+                `R$ ${value > 1000 ? `${(value / 1000).toFixed(1)}K` : value}`
+              }
             />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent indicator='dashed' />}
             />
-            <Bar dataKey='desktop' fill='var(--color-desktop)' radius={4} />
-            <Bar dataKey='mobile' fill='var(--color-mobile)' radius={4} />
+            <Bar dataKey='value1' fill='var(--color-value1)' radius={4} />
+            <Bar dataKey='value2' fill='var(--color-value2)' radius={4} />
           </BarChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className='flex-col items-start gap-2 text-sm'>
-        <div className='flex gap-2 font-medium leading-none'>
-          Trending up by 5.2% this month <TrendingUp className='h-4 w-4' />
-        </div>
-        <div className='leading-none text-muted-foreground'>
-          Showing total visitors for the last 6 months
+      <CardFooter className='mx-auto my-4 md:my-6 lg:my-8 text-sm'>
+        <div className='font-medium leading-none text-muted-foreground'>
+          {footer}
         </div>
       </CardFooter>
     </Card>

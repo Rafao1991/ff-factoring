@@ -286,6 +286,15 @@ functions:
           method: get
           authorizer:
             name: ApiAuthorizer
+  lastSixMonthsEarnings:
+    name: ${sls:stage}-${self:service}-lastSixMonthsEarnings
+    handler: src/index.lastSixMonthsEarningsHandler
+    events:
+      - httpApi:
+          path: /reports/last-six-months-earnings
+          method: get
+          authorizer:
+            name: ApiAuthorizer
 
 plugins:
   - serverless-offline

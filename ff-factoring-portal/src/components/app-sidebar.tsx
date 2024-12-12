@@ -32,10 +32,12 @@ export function AppSidebar({
           FF Factoring
         </Label>
         <Label className='text-lg font-medium text-center'>
-          {`${auth.user?.profile.given_name} ${auth.user?.profile.family_name}`}
+          {`${auth.user?.profile.given_name || ''} ${
+            auth.user?.profile.family_name || ''
+          }`}
         </Label>
         <Label className='pb-2 text-lg font-medium text-center'>
-          {auth.user?.profile.email}
+          {auth.user?.profile.email || ''}
         </Label>
         <Label className='font-normal text-center'>
           {format(new Date(), 'PPP')}
