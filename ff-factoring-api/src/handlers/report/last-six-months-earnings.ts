@@ -3,7 +3,7 @@ import {
   getSuccessResponse,
 } from '@/helpers/api-wrapper';
 import { getTransactionsByDateRange } from '@/services/transaction';
-import { addDays, format, min } from 'date-fns';
+import { addDays, format } from 'date-fns';
 import { subMonths } from 'date-fns/subMonths';
 
 const getTransactions = async (
@@ -26,7 +26,6 @@ const getTransactions = async (
 };
 
 const getMonthObject = (
-  transactions: Transaction[],
   startDate: Date,
   endDate: Date
 ): Record<string, TotalEarnings> => {
@@ -78,7 +77,7 @@ const getTotalEarningsByMonth = async (
     message: 'Total earnings by month started',
   });
 
-  const totalEarningsByMonth = getMonthObject(transactions, startDate, endDate);
+  const totalEarningsByMonth = getMonthObject(startDate, endDate);
 
   const totalEarnings = {
     check: 0,

@@ -1,6 +1,5 @@
 import {
   getInternalServerErrorResponse,
-  getNotFoundResponse,
   getSuccessResponse,
 } from '@/helpers/api-wrapper';
 import { getTransactionsByDateRange } from '@/services/transaction';
