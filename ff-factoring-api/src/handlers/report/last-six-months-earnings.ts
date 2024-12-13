@@ -1,10 +1,9 @@
 import {
   getInternalServerErrorResponse,
-  getNotFoundResponse,
   getSuccessResponse,
 } from '@/helpers/api-wrapper';
 import { getTransactionsByDateRange } from '@/services/transaction';
-import { addDays, format } from 'date-fns';
+import { addDays, format, min } from 'date-fns';
 import { subMonths } from 'date-fns/subMonths';
 
 const getTransactions = async (
@@ -27,35 +26,22 @@ const getTransactions = async (
 };
 
 const getMonthObject = (
-  transactions: Transaction[]
+  transactions: Transaction[],
+  startDate: Date,
+  endDate: Date
 ): Record<string, TotalEarnings> => {
   console.info({
     action: 'getMonthObject',
     message: 'Months object creation started',
   });
 
-  const months = Array.from(
-    new Set(
-      transactions.map(
-        (transaction) => new Date(transaction.date).getMonth() + 1
-      )
-    )
-  ).sort((a, b) => a - b);
+  const minMonth = startDate.getMonth() + 1;
+  const maxMonth = endDate.getMonth() + 1;
+  const months = [minMonth, maxMonth];
 
-  if (months.length < 6) {
-    const minMonth = months[0];
-    const maxMonth = months[months.length - 1];
-    console.info({
-      action: 'getMonthObject',
-      message: 'Number of months is less than 6, adding missing months',
-      minMonth,
-      maxMonth,
-    });
-
-    for (let i = minMonth; i <= maxMonth; i++) {
-      if (!months.includes(i)) {
-        months.push(i);
-      }
+  for (let i = minMonth; i <= maxMonth; i++) {
+    if (!months.includes(i)) {
+      months.push(i);
     }
   }
 
@@ -69,6 +55,7 @@ const getMonthObject = (
       },
     ])
   );
+
   console.info({
     action: 'getMonthObject',
     message: 'Months object creation finished',
@@ -79,7 +66,9 @@ const getMonthObject = (
 };
 
 const getTotalEarningsByMonth = async (
-  transactions: Transaction[]
+  transactions: Transaction[],
+  startDate: Date,
+  endDate: Date
 ): Promise<{
   totalEarnings: TotalEarnings;
   totalEarningsByMonth: Record<string, TotalEarnings>;
@@ -89,7 +78,7 @@ const getTotalEarningsByMonth = async (
     message: 'Total earnings by month started',
   });
 
-  const totalEarningsByMonth = getMonthObject(transactions);
+  const totalEarningsByMonth = getMonthObject(transactions, startDate, endDate);
 
   const totalEarnings = {
     check: 0,
@@ -195,18 +184,24 @@ export const lastSixMonthsEarningsHandler = async () => {
   });
 
   try {
-    const today = new Date();
-    const endDate = addDays(today, 1);
-    const startDate = subMonths(today, 6);
+    const today = new Date(new Date().setHours(0, 0, 0, 0));
+    const endDate = new Date(addDays(today, 1).setHours(0, 0, 0, 0));
+    const startDate = new Date(subMonths(today, 6).setHours(0, 0, 0, 0));
     const transactions = await getTransactions(startDate, endDate);
 
     if (transactions.length === 0) {
-      return getNotFoundResponse('Transactions not found');
+      return getSuccessResponse('Last 6 months earnings', {
+        startDate: format(startDate, 'PP'),
+        endDate: format(endDate, 'PP'),
+        totalEarnings: {},
+        totalEarningsByMonth: {},
+        totalEarningsByCustomer: {},
+      });
     }
 
     const [{ totalEarnings, totalEarningsByMonth }, totalEarningsByCustomer] =
       await Promise.all([
-        getTotalEarningsByMonth(transactions),
+        getTotalEarningsByMonth(transactions, startDate, endDate),
         getTotalEarningsByCustomer(transactions),
       ]);
 

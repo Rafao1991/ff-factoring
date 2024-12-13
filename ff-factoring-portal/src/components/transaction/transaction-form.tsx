@@ -160,7 +160,7 @@ export default function TransactionForm({
         }
       : {
           amount: 0,
-          date: new Date(),
+          date: new Date(new Date().setHours(0, 0, 0, 0)),
         },
   });
 

@@ -32,12 +32,22 @@ export const dailyTransactionsHandler = async () => {
   });
 
   try {
-    const startDate = new Date();
-    const endDate = addDays(startDate, 1);
+    const startDate = new Date(new Date().setHours(0, 0, 0, 0));
+    const endDate = new Date(addDays(startDate, 1).setHours(0, 0, 0, 0));
+
+    console.info({
+      startDate,
+      endDate,
+    });
+
     const transactions = await getTransactions(startDate, endDate);
 
     if (transactions.length === 0) {
-      return getNotFoundResponse('Transactions not found');
+      return getSuccessResponse('Daily transactions', {
+        startDate: format(startDate, 'PPP'),
+        endDate: format(endDate, 'PPP'),
+        transactionsByCustomer: {},
+      });
     }
 
     const transactionsByCustomer = transactions.reduce((acc, transaction) => {
