@@ -38,7 +38,7 @@ export default function DashboardPage() {
               title='Receita por tipo de operação'
               label1='Cheque'
               label2='Duplicata'
-              footer='Mostra receita mensal dos últimos seis meses'
+              footer='Receita mensal dos últimos seis meses'
               startDate={lastSixMonthsEarnings.startDate}
               endDate={lastSixMonthsEarnings.endDate}
               totalEarningsByMonth={lastSixMonthsEarnings.totalEarningsByMonth}
@@ -46,14 +46,14 @@ export default function DashboardPage() {
             <LineChartSimple
               title='Receita mensal'
               label='R$'
-              footer='Mostra receita mensal dos últimos seis meses'
+              footer='Receita dos últimos seis meses'
               startDate={lastSixMonthsEarnings.startDate}
               endDate={lastSixMonthsEarnings.endDate}
               totalEarningsByMonth={lastSixMonthsEarnings.totalEarningsByMonth}
             />
             <BarChartHorizontal
               title='Receita por cliente'
-              footer='Mostra receita mensal dos últimos seis meses'
+              footer='Receita total dos últimos seis meses'
               startDate={lastSixMonthsEarnings.startDate}
               endDate={lastSixMonthsEarnings.endDate}
               totalEarningsByCustomer={

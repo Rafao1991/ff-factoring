@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Error } from '@/components/error';
 import TransactionForm, {
@@ -16,7 +16,7 @@ import { Loading } from '@/components/loading';
 
 const title = 'Detalhe da operação';
 
-export default function Transaction() {
+function Transaction() {
   const auth = useAuth();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -94,5 +94,13 @@ export default function Transaction() {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+export default function TransactionWrapper() {
+  return (
+    <Suspense>
+      <Transaction />
+    </Suspense>
   );
 }

@@ -8,7 +8,7 @@ import { Error } from '@/components/error';
 import useGetCustomer from '@/hooks/api/customers/use-get-customer';
 import { toast } from '@/hooks/use-toast';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import useUpdateCustomer from '@/hooks/api/customers/use-update-customer';
 import { useAuth } from 'react-oidc-context';
 import { useQueryClient } from '@tanstack/react-query';
@@ -16,7 +16,7 @@ import { Loading } from '@/components/loading';
 
 const title = 'Detalhe do cliente';
 
-export default function Customer() {
+function Customer() {
   const auth = useAuth();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -96,5 +96,13 @@ export default function Customer() {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+export default function CustomerWrapper() {
+  return (
+    <Suspense>
+      <Customer />
+    </Suspense>
   );
 }
