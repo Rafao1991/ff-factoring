@@ -55,36 +55,44 @@ export function BarChartMultiple({
   const chartConfig: ChartConfig = {
     value1: {
       label: label1,
-      color: 'hsl(var(--chart-1))',
+      color: 'hsl(var(--chart-4))',
     },
     value2: {
       label: label2,
-      color: 'hsl(var(--chart-2))',
+      color: 'hsl(var(--chart-3))',
     },
   };
 
   return (
-    <Card className='flex flex-col'>
+    <Card className='flex flex-col bg-gray-50'>
       <CardHeader className='items-center pb-0'>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{`${startDate} - ${endDate}`}</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className='min-h-40 max-h-80'>
-          <BarChart accessibilityLayer data={chartData}>
+          <BarChart
+            accessibilityLayer
+            data={chartData}
+            margin={{
+              left: 8,
+              right: 8,
+            }}
+          >
             <CartesianGrid vertical={false} />
             <XAxis
               dataKey='month'
+              axisLine={false}
               tickLine={false}
               tickMargin={8}
-              axisLine={false}
               tickFormatter={(value) => value.slice(0, 3)}
             />
             <YAxis
               dataKey={'value1'}
+              width={100}
+              axisLine={false}
               tickLine={false}
               tickMargin={8}
-              axisLine={false}
               tickFormatter={(value) =>
                 `R$ ${value > 1000 ? `${(value / 1000).toFixed(1)}K` : value}`
               }
