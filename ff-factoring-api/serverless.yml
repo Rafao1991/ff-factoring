@@ -295,6 +295,15 @@ functions:
           method: get
           authorizer:
             name: ApiAuthorizer
+  dailyTransactions:
+    name: ${sls:stage}-${self:service}-dailyTransactions
+    handler: src/index.dailyTransactionsHandler
+    events:
+      - httpApi:
+          path: /reports/daily-transactions
+          method: get
+          authorizer:
+            name: ApiAuthorizer
 
 plugins:
   - serverless-offline

@@ -26,7 +26,9 @@ const getTransactions = async (
   return transactions;
 };
 
-const getMonthObject = (transactions: Transaction[]) => {
+const getMonthObject = (
+  transactions: Transaction[]
+): Record<string, TotalEarnings> => {
   console.info({
     action: 'getMonthObject',
     message: 'Months object creation started',
@@ -76,7 +78,12 @@ const getMonthObject = (transactions: Transaction[]) => {
   return monthsObject;
 };
 
-const getTotalEarningsByMonth = async (transactions: Transaction[]) => {
+const getTotalEarningsByMonth = async (
+  transactions: Transaction[]
+): Promise<{
+  totalEarnings: TotalEarnings;
+  totalEarningsByMonth: Record<string, TotalEarnings>;
+}> => {
   console.info({
     action: 'getTotalEarningsByMonth',
     message: 'Total earnings by month started',
@@ -124,7 +131,9 @@ const getTotalEarningsByMonth = async (transactions: Transaction[]) => {
   return { totalEarnings, totalEarningsByMonth };
 };
 
-const getTotalEarningsByCustomer = async (transactions: Transaction[]) => {
+const getTotalEarningsByCustomer = async (
+  transactions: Transaction[]
+): Promise<Record<string, CustomerEarnings>> => {
   console.info({
     action: 'getTotalEarningsByCustomer',
     message: 'Total earnings by customer started',
@@ -201,7 +210,7 @@ export const lastSixMonthsEarningsHandler = async () => {
         getTotalEarningsByCustomer(transactions),
       ]);
 
-    const response = {
+    const response: LastSixMonthsEarnings = {
       startDate: format(startDate, 'PP'),
       endDate: format(endDate, 'PP'),
       totalEarnings,
@@ -212,12 +221,15 @@ export const lastSixMonthsEarningsHandler = async () => {
     console.info({
       action: 'lastSixMonthsEarningsHandler',
       message: 'Last 6 months earnings handler finished',
-      response,
+      response: JSON.parse(JSON.stringify(response)),
     });
 
     return getSuccessResponse('Last 6 months earnings', response);
   } catch (error) {
     console.error({ error });
-    return getInternalServerErrorResponse('Error getting transaction', error);
+    return getInternalServerErrorResponse(
+      'Error getting last 6 months earnings',
+      error
+    );
   }
 };
