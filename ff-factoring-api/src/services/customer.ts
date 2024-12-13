@@ -39,7 +39,7 @@ export const scanCustomers = async (): Promise<Customer[]> => {
       name: item.name,
       emails: item.emails,
       phones: item.phones,
-    }));
+    })).sort((a, b) => a.name.localeCompare(b.name));
 
     return customers;
   } catch (error) {

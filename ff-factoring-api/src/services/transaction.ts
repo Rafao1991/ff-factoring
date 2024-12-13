@@ -46,7 +46,7 @@ export const scanTransactions = async (): Promise<Transaction[]> => {
       dueDate: item.dueDate,
       type: item.type,
       completed: item.completed,
-    }));
+    })).sort((a, b) => a.date.localeCompare(b.date));
 
     return transactions;
   } catch (error) {
