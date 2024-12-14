@@ -13,6 +13,10 @@ export {
   getTransactionHandler,
   listTransactionsHandler,
   updateTransactionHandler,
+  getTransactionsByCustomerDocumentNumberHandler,
+  getTransactionsByCustomerDocumentNumberAndDateRangeHandler,
+  getTransactionsByCustomerDocumentNumberAndDueDateRangeHandler,
+  getTransactionsByCustomerDocumentNumberAndAmountRangeHandler,
 } from '@/handlers/transaction';
 
 export {

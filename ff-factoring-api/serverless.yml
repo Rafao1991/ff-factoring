@@ -261,6 +261,42 @@ functions:
           method: get
           authorizer:
             name: ApiAuthorizer
+  getTransactionsByCustomerDocumentNumber:
+    name: ${sls:stage}-${self:service}-getTransactionsByCustomerDocumentNumber
+    handler: src/index.getTransactionsByCustomerDocumentNumberHandler
+    events:
+      - httpApi:
+          path: /transactions/customer
+          method: get
+          authorizer:
+            name: ApiAuthorizer
+  getTransactionsByCustomerDocumentNumberAndDateRange:
+    name: ${sls:stage}-${self:service}-getTransactionsByCustomerDocumentNumberAndDateRange
+    handler: src/index.getTransactionsByCustomerDocumentNumberAndDateRangeHandler
+    events:
+      - httpApi:
+          path: /transactions/customer-date
+          method: get
+          authorizer:
+            name: ApiAuthorizer
+  getTransactionsByCustomerDocumentNumberAndDueDateRange:
+    name: ${sls:stage}-${self:service}-getTransactionsByCustomerDocumentNumberAndDueDateRange
+    handler: src/index.getTransactionsByCustomerDocumentNumberAndDueDateRangeHandler
+    events:
+      - httpApi:
+          path: /transactions/customer-due-date
+          method: get
+          authorizer:
+            name: ApiAuthorizer
+  getTransactionsByCustomerDocumentNumberAndAmountRange:
+    name: ${sls:stage}-${self:service}-getTransactionsByCustomerDocumentNumberAndAmountRange
+    handler: src/index.getTransactionsByCustomerDocumentNumberAndAmountRangeHandler
+    events:
+      - httpApi:
+          path: /transactions/customer-amount
+          method: get
+          authorizer:
+            name: ApiAuthorizer
   lastSixMonthsEarnings:
     name: ${sls:stage}-${self:service}-lastSixMonthsEarnings
     handler: src/index.lastSixMonthsEarningsHandler

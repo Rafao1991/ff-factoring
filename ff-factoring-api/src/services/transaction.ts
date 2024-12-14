@@ -6,6 +6,9 @@ import {
   GetCommandOutput,
   PutCommand,
   PutCommandInput,
+  QueryCommand,
+  QueryCommandInput,
+  QueryCommandOutput,
   ScanCommand,
   ScanCommandInput,
   ScanCommandOutput,
@@ -27,7 +30,7 @@ export const getTransactions = async (): Promise<Transaction[]> => {
     const response: ScanCommandOutput = await docClient.send(command);
     console.info({
       service: 'transaction',
-      action: 'scanTransactions',
+      action: 'getTransactions',
       input,
       command,
       response: JSON.stringify(response, null, 4),
@@ -51,15 +54,15 @@ export const getTransactions = async (): Promise<Transaction[]> => {
     return transactions;
   } catch (error) {
     console.error({
-      service: 'customer',
-      action: 'scanCustomers',
+      service: 'transaction',
+      action: 'getTransactions',
       error,
     });
     throw error;
   } finally {
     console.info({
-      service: 'customer',
-      action: 'scanCustomers',
+      service: 'transaction',
+      action: 'getTransactions',
       message: 'DynamoDB client closed',
     });
 
@@ -109,15 +112,15 @@ export const getTransactionById = async (
     return transaction;
   } catch (error) {
     console.error({
-      service: 'customer',
-      action: 'scanCustomers',
+      service: 'transaction',
+      action: 'getTransactionById',
       error,
     });
     throw error;
   } finally {
     console.info({
-      service: 'customer',
-      action: 'scanCustomers',
+      service: 'transaction',
+      action: 'getTransactionById',
       message: 'DynamoDB client closed',
     });
 
@@ -149,7 +152,7 @@ export const getTransactionsByDateRange = async (
     const response: ScanCommandOutput = await docClient.send(command);
     console.info({
       service: 'transaction',
-      action: 'getTransactionByDate',
+      action: 'getTransactionsByDateRange',
       input,
       command,
       response,
@@ -168,20 +171,291 @@ export const getTransactionsByDateRange = async (
       dueDate: item.dueDate,
       type: item.type,
       completed: item.completed,
-    }));
+    })).sort((a, b) => a.date.localeCompare(b.date));
 
     return transactions;
   } catch (error) {
     console.error({
-      service: 'customer',
-      action: 'scanCustomers',
+      service: 'transaction',
+      action: 'getTransactionsByDateRange',
       error,
     });
     throw error;
   } finally {
     console.info({
-      service: 'customer',
-      action: 'scanCustomers',
+      service: 'transaction',
+      action: 'getTransactionsByDateRange',
+      message: 'DynamoDB client closed',
+    });
+
+    client.destroy();
+    docClient.destroy();
+  }
+};
+
+export const getTransactionsByCustomerDocumentNumber = async (
+  customerDocumentNumber: string
+): Promise<Transaction[]> => {
+  const { client, docClient } = getDynamoDB();
+
+  try {
+    const input: QueryCommandInput = {
+      TableName: transactionsTableName,
+      IndexName: 'customerDocumentNumber-index',
+      ConsistentRead: false,
+      KeyConditionExpression:
+        '#customerDocumentNumber = :customerDocumentNumber',
+      ExpressionAttributeNames: {
+        '#customerDocumentNumber': 'customerDocumentNumber',
+      },
+      ExpressionAttributeValues: {
+        ':customerDocumentNumber': customerDocumentNumber,
+      },
+    };
+    const command = new QueryCommand(input);
+    const response: QueryCommandOutput = await docClient.send(command);
+    console.info({
+      service: 'transaction',
+      action: 'getTransactionsByCustomerDocumentNumber',
+      input,
+      command,
+      response,
+    });
+
+    if (!response.Items) {
+      return [];
+    }
+
+    const transactions: Transaction[] = response.Items.map((item) => ({
+      id: item.id,
+      customerDocumentNumber: item.customerDocumentNumber,
+      customerName: item.customerName,
+      amount: item.amount,
+      date: item.date,
+      dueDate: item.dueDate,
+      type: item.type,
+      completed: item.completed,
+    })).sort((a, b) => a.date.localeCompare(b.date));
+
+    return transactions;
+  } catch (error) {
+    console.error({
+      service: 'transaction',
+      action: 'getTransactionsByCustomerDocumentNumber',
+      error,
+    });
+    throw error;
+  } finally {
+    console.info({
+      service: 'transaction',
+      action: 'getTransactionsByCustomerDocumentNumber',
+      message: 'DynamoDB client closed',
+    });
+
+    client.destroy();
+    docClient.destroy();
+  }
+};
+
+export const getTransactionsByCustomerDocumentNumberAndDateRange = async (
+  customerDocumentNumber: string,
+  startDate: Date,
+  endDate: Date
+): Promise<Transaction[]> => {
+  const { client, docClient } = getDynamoDB();
+
+  try {
+    const input: QueryCommandInput = {
+      TableName: transactionsTableName,
+      IndexName: 'customerDocumentNumber-date-index',
+      ConsistentRead: false,
+      KeyConditionExpression:
+        '#customerDocumentNumber = :customerDocumentNumber AND #date BETWEEN :startDate AND :endDate',
+      ExpressionAttributeNames: {
+        '#customerDocumentNumber': 'customerDocumentNumber',
+        '#date': 'date',
+      },
+      ExpressionAttributeValues: {
+        ':customerDocumentNumber': customerDocumentNumber,
+        ':startDate': format(startDate, 'yyyy-MM-dd'),
+        ':endDate': format(endDate, 'yyyy-MM-dd'),
+      },
+    };
+    const command = new QueryCommand(input);
+    const response: QueryCommandOutput = await docClient.send(command);
+    console.info({
+      service: 'transaction',
+      action: 'getTransactionsByIdAndDateRange',
+      input,
+      command,
+      response,
+    });
+
+    if (!response.Items) {
+      return [];
+    }
+
+    const transactions: Transaction[] = response.Items.map((item) => ({
+      id: item.id,
+      customerDocumentNumber: item.customerDocumentNumber,
+      customerName: item.customerName,
+      amount: item.amount,
+      date: item.date,
+      dueDate: item.dueDate,
+      type: item.type,
+      completed: item.completed,
+    })).sort((a, b) => a.date.localeCompare(b.date));
+
+    return transactions;
+  } catch (error) {
+    console.error({
+      service: 'transaction',
+      action: 'getTransactionsByIdAndDateRange',
+      error,
+    });
+    throw error;
+  } finally {
+    console.info({
+      service: 'transaction',
+      action: 'getTransactionsByIdAndDateRange',
+      message: 'DynamoDB client closed',
+    });
+
+    client.destroy();
+    docClient.destroy();
+  }
+};
+
+export const getTransactionsByCustomerDocumentNumberAndDueDateRange = async (
+  customerDocumentNumber: string,
+  startDate: Date,
+  endDate: Date
+): Promise<Transaction[]> => {
+  const { client, docClient } = getDynamoDB();
+
+  try {
+    const input: QueryCommandInput = {
+      TableName: transactionsTableName,
+      IndexName: 'customerDocumentNumber-dueDate-index',
+      ConsistentRead: false,
+      KeyConditionExpression:
+        '#customerDocumentNumber = :customerDocumentNumber AND #dueDate BETWEEN :startDate AND :endDate',
+      ExpressionAttributeNames: {
+        '#customerDocumentNumber': 'customerDocumentNumber',
+        '#dueDate': 'dueDate',
+      },
+      ExpressionAttributeValues: {
+        ':customerDocumentNumber': customerDocumentNumber,
+        ':startDate': format(startDate, 'yyyy-MM-dd'),
+        ':endDate': format(endDate, 'yyyy-MM-dd'),
+      },
+    };
+    const command = new QueryCommand(input);
+    const response: QueryCommandOutput = await docClient.send(command);
+    console.info({
+      service: 'transaction',
+      action: 'getTransactionsByCustomerDocumentNumberAndDueDateRange',
+      input,
+      command,
+      response,
+    });
+
+    if (!response.Items) {
+      return [];
+    }
+
+    const transactions: Transaction[] = response.Items.map((item) => ({
+      id: item.id,
+      customerDocumentNumber: item.customerDocumentNumber,
+      customerName: item.customerName,
+      amount: item.amount,
+      date: item.date,
+      dueDate: item.dueDate,
+      type: item.type,
+      completed: item.completed,
+    })).sort((a, b) => a.date.localeCompare(b.date));
+
+    return transactions;
+  } catch (error) {
+    console.error({
+      service: 'transaction',
+      action: 'getTransactionsByCustomerDocumentNumberAndDueDateRange',
+      error,
+    });
+    throw error;
+  } finally {
+    console.info({
+      service: 'transaction',
+      action: 'getTransactionsByCustomerDocumentNumberAndDueDateRange',
+      message: 'DynamoDB client closed',
+    });
+
+    client.destroy();
+    docClient.destroy();
+  }
+};
+
+export const getTransactionsByCustomerDocumentNumberAndAmountRange = async (
+  customerDocumentNumber: string,
+  minAmount: number,
+  maxAmount: number
+): Promise<Transaction[]> => {
+  const { client, docClient } = getDynamoDB();
+
+  try {
+    const input: QueryCommandInput = {
+      TableName: transactionsTableName,
+      IndexName: 'customerDocumentNumber-amount-index',
+      ConsistentRead: false,
+      KeyConditionExpression:
+        '#customerDocumentNumber = :customerDocumentNumber AND #amount BETWEEN :minAmount AND :maxAmount',
+      ExpressionAttributeNames: {
+        '#customerDocumentNumber': 'customerDocumentNumber',
+        '#amount': 'amount',
+      },
+      ExpressionAttributeValues: {
+        ':customerDocumentNumber': customerDocumentNumber,
+        ':minAmount': minAmount,
+        ':maxAmount': maxAmount,
+      },
+    };
+    const command = new QueryCommand(input);
+    const response: QueryCommandOutput = await docClient.send(command);
+    console.info({
+      service: 'transaction',
+      action: 'getTransactionsByCustomerDocumentNumberAndAmountRange',
+      input,
+      command,
+      response,
+    });
+
+    if (!response.Items) {
+      return [];
+    }
+
+    const transactions: Transaction[] = response.Items.map((item) => ({
+      id: item.id,
+      customerDocumentNumber: item.customerDocumentNumber,
+      customerName: item.customerName,
+      amount: item.amount,
+      date: item.date,
+      dueDate: item.dueDate,
+      type: item.type,
+      completed: item.completed,
+    })).sort((a, b) => a.date.localeCompare(b.date));
+
+    return transactions;
+  } catch (error) {
+    console.error({
+      service: 'transaction',
+      action: 'getTransactionsByCustomerDocumentNumberAndAmountRange',
+      error,
+    });
+    throw error;
+  } finally {
+    console.info({
+      service: 'transaction',
+      action: 'getTransactionsByCustomerDocumentNumberAndAmountRange',
       message: 'DynamoDB client closed',
     });
 
@@ -211,21 +485,21 @@ export const putTransaction = async (transaction: Transaction) => {
     await docClient.send(command);
     console.info({
       service: 'transaction',
-      action: 'createTransaction',
+      action: 'putTransaction',
       input,
       command,
     });
   } catch (error) {
     console.error({
-      service: 'customer',
-      action: 'scanCustomers',
+      service: 'transaction',
+      action: 'putTransaction',
       error,
     });
     throw error;
   } finally {
     console.info({
-      service: 'customer',
-      action: 'scanCustomers',
+      service: 'transaction',
+      action: 'putTransaction',
       message: 'DynamoDB client closed',
     });
 

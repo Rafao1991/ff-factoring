@@ -1,5 +1,9 @@
 export { completeTransactionHandler } from '@/handlers/transaction/complete';
 export { createTransactionHandler } from '@/handlers/transaction/create';
-export { getTransactionHandler } from '@/handlers/transaction/get';
 export { listTransactionsHandler } from '@/handlers/transaction/list';
+export { getTransactionHandler } from '@/handlers/transaction/get';
+export { getTransactionsByCustomerDocumentNumberHandler } from '@/handlers/transaction/get-by-customer';
+export { getTransactionsByCustomerDocumentNumberAndDateRangeHandler } from '@/handlers/transaction/get-by-customer-date';
+export { getTransactionsByCustomerDocumentNumberAndDueDateRangeHandler } from '@/handlers/transaction/get-by-customer-due-date';
+export { getTransactionsByCustomerDocumentNumberAndAmountRangeHandler } from '@/handlers/transaction/get-by-customer-amount';
 export { updateTransactionHandler } from '@/handlers/transaction/update';
