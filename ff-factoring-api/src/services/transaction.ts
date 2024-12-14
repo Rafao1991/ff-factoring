@@ -16,7 +16,7 @@ const transactionsTableName = getTransactionsTableName();
 
 export const validTransactionTypes = ['cheque', 'duplicata'] as const;
 
-export const scanTransactions = async (): Promise<Transaction[]> => {
+export const getTransactions = async (): Promise<Transaction[]> => {
   const { client, docClient } = getDynamoDB();
 
   try {
@@ -126,50 +126,6 @@ export const getTransactionById = async (
   }
 };
 
-export const putTransaction = async (transaction: Transaction) => {
-  const { client, docClient } = getDynamoDB();
-
-  try {
-    const input: PutCommandInput = {
-      TableName: transactionsTableName,
-      Item: {
-        id: transaction.id,
-        customerDocumentNumber: transaction.customerDocumentNumber,
-        customerName: transaction.customerName,
-        amount: transaction.amount,
-        date: transaction.date,
-        dueDate: transaction.dueDate,
-        type: transaction.type,
-        completed: transaction.completed,
-      },
-    };
-    const command = new PutCommand(input);
-    await docClient.send(command);
-    console.info({
-      service: 'transaction',
-      action: 'createTransaction',
-      input,
-      command,
-    });
-  } catch (error) {
-    console.error({
-      service: 'customer',
-      action: 'scanCustomers',
-      error,
-    });
-    throw error;
-  } finally {
-    console.info({
-      service: 'customer',
-      action: 'scanCustomers',
-      message: 'DynamoDB client closed',
-    });
-
-    client.destroy();
-    docClient.destroy();
-  }
-};
-
 export const getTransactionsByDateRange = async (
   startDate: Date,
   endDate: Date
@@ -215,6 +171,50 @@ export const getTransactionsByDateRange = async (
     }));
 
     return transactions;
+  } catch (error) {
+    console.error({
+      service: 'customer',
+      action: 'scanCustomers',
+      error,
+    });
+    throw error;
+  } finally {
+    console.info({
+      service: 'customer',
+      action: 'scanCustomers',
+      message: 'DynamoDB client closed',
+    });
+
+    client.destroy();
+    docClient.destroy();
+  }
+};
+
+export const putTransaction = async (transaction: Transaction) => {
+  const { client, docClient } = getDynamoDB();
+
+  try {
+    const input: PutCommandInput = {
+      TableName: transactionsTableName,
+      Item: {
+        id: transaction.id,
+        customerDocumentNumber: transaction.customerDocumentNumber,
+        customerName: transaction.customerName,
+        amount: transaction.amount,
+        date: transaction.date,
+        dueDate: transaction.dueDate,
+        type: transaction.type,
+        completed: transaction.completed,
+      },
+    };
+    const command = new PutCommand(input);
+    await docClient.send(command);
+    console.info({
+      service: 'transaction',
+      action: 'createTransaction',
+      input,
+      command,
+    });
   } catch (error) {
     console.error({
       service: 'customer',

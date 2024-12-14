@@ -2,11 +2,11 @@ import {
   getInternalServerErrorResponse,
   getSuccessResponse,
 } from '@/helpers/api-wrapper';
-import { scanTransactions } from '@/services/transaction';
+import { getTransactions } from '@/services/transaction';
 
 export const listTransactionsHandler = async () => {
   try {
-    const transactions = await scanTransactions();
+    const transactions = await getTransactions();
     console.info({ transactions });
     return getSuccessResponse('Transactions listed', transactions);
   } catch (error) {
