@@ -26,13 +26,13 @@ resources:
         TableName: ${param:customersTableName}
         AttributeDefinitions:
           - AttributeName: documentNumber
-            AttributeType: S
+            AttributeType: 'S'
           - AttributeName: name
-            AttributeType: S
+            AttributeType: 'S'
           - AttributeName: emails
-            AttributeType: SS
+            AttributeType: 'SS'
           - AttributeName: phones
-            AttributeType: SS
+            AttributeType: 'SS'
         BillingMode: PAY_PER_REQUEST
         OnDemandThroughput:
           ReadCapacityUnits: 1
@@ -54,21 +54,21 @@ resources:
         TableName: ${param:transactionsTableName}
         AttributeDefinitions:
           - AttributeName: id
-            AttributeType: S
+            AttributeType: 'S'
           - AttributeName: customerDocumentNumber
-            AttributeType: S
+            AttributeType: 'S'
           - AttributeName: customerName
-            AttributeType: S
+            AttributeType: 'S'
           - AttributeName: amount
-            AttributeType: N
+            AttributeType: 'N'
           - AttributeName: date
-            AttributeType: S
+            AttributeType: 'S'
           - AttributeName: dueDate
-            AttributeType: S
+            AttributeType: 'S'
           - AttributeName: type
-            AttributeType: S
+            AttributeType: 'S'
           - AttributeName: completed
-            AttributeType: B
+            AttributeType: 'B'
         BillingMode: PAY_PER_REQUEST
         OnDemandThroughput:
           ReadCapacityUnits: 1
@@ -76,31 +76,6 @@ resources:
         KeySchema:
           - AttributeName: id
             KeyType: HASH
-        LocalSecondaryIndexes:
-          - IndexName: amount-index
-            KeySchema:
-              - AttributeName: id
-                KeyType: HASH
-              - AttributeName: amount
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
-          - IndexName: date-index
-            KeySchema:
-              - AttributeName: id
-                KeyType: HASH
-              - AttributeName: date
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
-          - IndexName: dueDate-index
-            KeySchema:
-              - AttributeName: id
-                KeyType: HASH
-              - AttributeName: dueDate
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
         GlobalSecondaryIndexes:
           - IndexName: customerDocumentNumber-amount-index
             KeySchema:
