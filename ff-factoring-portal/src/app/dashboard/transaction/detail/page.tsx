@@ -58,7 +58,13 @@ function Transaction() {
 
   function onSubmit(transaction: TransactionSchema) {
     if (!id) return;
-    updateTransaction({ id, transaction });
+    updateTransaction({
+      id,
+      transaction: {
+        ...transaction,
+        amount: Number(transaction.amount.toFixed(2)),
+      },
+    });
   }
 
   // Redirect to the transaction page if the id is not found

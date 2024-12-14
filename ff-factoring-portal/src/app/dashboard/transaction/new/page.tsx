@@ -49,7 +49,10 @@ export default function NewTransaction() {
   }, [isCreationError, creationError]);
 
   function onSubmit(values: TransactionSchema) {
-    createTransaction(values);
+    createTransaction({
+      ...values,
+      amount: Number(values.amount.toFixed(2)),
+    });
   }
 
   if (!auth.isAuthenticated) {
