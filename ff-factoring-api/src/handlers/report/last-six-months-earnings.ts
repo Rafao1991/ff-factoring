@@ -119,19 +119,19 @@ const getTotalEarningsByMonth = async (
   return { totalEarnings, totalEarningsByMonth };
 };
 
-const getTotalEarningsByCustomer = async (
+const getTotalEarningsByAssignor = async (
   transactions: Transaction[]
-): Promise<Record<string, CustomerEarnings>> => {
+): Promise<Record<string, AssignorEarnings>> => {
   console.info({
-    action: 'getTotalEarningsByCustomer',
-    message: 'Total earnings by customer started',
+    action: 'getTotalEarningsByAssignor',
+    message: 'Total earnings by assignor started',
   });
 
-  let totalEarningsByCustomer = Object.fromEntries(
+  let totalEarningsByAssignor = Object.fromEntries(
     transactions.map((transaction) => [
-      transaction.customerDocumentNumber,
+      transaction.assignorDocumentNumber,
       {
-        name: transaction.customerName,
+        name: transaction.assignorName,
         check: 0,
         ticket: 0,
         total: 0,
@@ -141,39 +141,39 @@ const getTotalEarningsByCustomer = async (
 
   transactions.forEach((transaction) => {
     console.info({
-      action: 'getTotalEarningsByCustomer',
+      action: 'getTotalEarningsByAssignor',
       message: `Processing transaction ${transaction.id}`,
     });
 
-    const customerDocumentNumber = transaction.customerDocumentNumber;
-    totalEarningsByCustomer[customerDocumentNumber].total += transaction.amount;
+    const assignorDocumentNumber = transaction.assignorDocumentNumber;
+    totalEarningsByAssignor[assignorDocumentNumber].total += transaction.amount;
 
     if (transaction.type === 'cheque') {
-      totalEarningsByCustomer[customerDocumentNumber].check +=
+      totalEarningsByAssignor[assignorDocumentNumber].check +=
         transaction.amount;
       return;
     }
 
     if (transaction.type === 'duplicata') {
-      totalEarningsByCustomer[customerDocumentNumber].ticket +=
+      totalEarningsByAssignor[assignorDocumentNumber].ticket +=
         transaction.amount;
       return;
     }
   });
 
-  totalEarningsByCustomer = Object.fromEntries(
-    Object.entries(totalEarningsByCustomer).sort((a, b) => {
+  totalEarningsByAssignor = Object.fromEntries(
+    Object.entries(totalEarningsByAssignor).sort((a, b) => {
       return b[1].total - a[1].total;
     })
   );
 
   console.info({
-    action: 'getTotalEarningsByCustomer',
-    message: 'Total earnings by customer finished',
-    totalEarningsByCustomer,
+    action: 'getTotalEarningsByAssignor',
+    message: 'Total earnings by assignor finished',
+    totalEarningsByAssignor,
   });
 
-  return totalEarningsByCustomer;
+  return totalEarningsByAssignor;
 };
 
 export const lastSixMonthsEarningsHandler = async () => {
@@ -194,14 +194,14 @@ export const lastSixMonthsEarningsHandler = async () => {
         endDate: format(endDate, 'PP'),
         totalEarnings: {},
         totalEarningsByMonth: {},
-        totalEarningsByCustomer: {},
+        totalEarningsByAssignor: {},
       });
     }
 
-    const [{ totalEarnings, totalEarningsByMonth }, totalEarningsByCustomer] =
+    const [{ totalEarnings, totalEarningsByMonth }, totalEarningsByAssignor] =
       await Promise.all([
         getTotalEarningsByMonth(transactions, startDate, endDate),
-        getTotalEarningsByCustomer(transactions),
+        getTotalEarningsByAssignor(transactions),
       ]);
 
     const response: LastSixMonthsEarnings = {
@@ -209,7 +209,7 @@ export const lastSixMonthsEarningsHandler = async () => {
       endDate: format(endDate, 'PP'),
       totalEarnings,
       totalEarningsByMonth,
-      totalEarningsByCustomer,
+      totalEarningsByAssignor: totalEarningsByAssignor,
     };
 
     console.info({

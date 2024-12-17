@@ -13,7 +13,7 @@ import {
   ScanCommandInput,
   ScanCommandOutput,
 } from '@aws-sdk/lib-dynamodb';
-import { format } from 'date-fns';
+import { compareDesc, format } from 'date-fns';
 
 const transactionsTableName = getTransactionsTableName();
 
@@ -40,16 +40,23 @@ export const getTransactions = async (): Promise<Transaction[]> => {
       return [];
     }
 
-    const transactions: Transaction[] = response.Items.map((item) => ({
-      id: item.id,
-      customerDocumentNumber: item.customerDocumentNumber,
-      customerName: item.customerName,
-      amount: item.amount,
-      date: item.date,
-      dueDate: item.dueDate,
-      type: item.type,
-      completed: item.completed,
-    })).sort((a, b) => a.date.localeCompare(b.date));
+    const transactions: Transaction[] = response.Items.map(
+      (item): Transaction => ({
+        id: item.id,
+        assignorDocumentNumber: item.assignorDocumentNumber,
+        assignorName: item.assignorName,
+        payerDocumentNumber: item.payerDocumentNumber,
+        payerName: item.payerName,
+        investorDocumentNumber: item.investorDocumentNumber,
+        investorName: item.investorName,
+        amount: item.amount,
+        date: item.date,
+        dueDate: item.dueDate,
+        type: item.type,
+        completed: item.completed,
+        description: item.description,
+      })
+    ).sort((a, b) => compareDesc(a.date, b.date));
 
     return transactions;
   } catch (error) {
@@ -98,15 +105,22 @@ export const getTransactionById = async (
       return undefined;
     }
 
+    const { Item: item } = response;
+
     const transaction: Transaction = {
-      id: response.Item.id,
-      customerDocumentNumber: response.Item.customerDocumentNumber,
-      customerName: response.Item.customerName,
-      amount: response.Item.amount,
-      date: response.Item.date,
-      dueDate: response.Item.dueDate,
-      type: response.Item.type,
-      completed: response.Item.completed,
+      id: item.id,
+      assignorDocumentNumber: item.assignorDocumentNumber,
+      assignorName: item.assignorName,
+      payerDocumentNumber: item.payerDocumentNumber,
+      payerName: item.payerName,
+      investorDocumentNumber: item.investorDocumentNumber,
+      investorName: item.investorName,
+      amount: item.amount,
+      date: item.date,
+      dueDate: item.dueDate,
+      type: item.type,
+      completed: item.completed,
+      description: item.description,
     };
 
     return transaction;
@@ -162,16 +176,23 @@ export const getTransactionsByDateRange = async (
       return [];
     }
 
-    const transactions: Transaction[] = response.Items.map((item) => ({
-      id: item.id,
-      customerDocumentNumber: item.customerDocumentNumber,
-      customerName: item.customerName,
-      amount: item.amount,
-      date: item.date,
-      dueDate: item.dueDate,
-      type: item.type,
-      completed: item.completed,
-    })).sort((a, b) => a.date.localeCompare(b.date));
+    const transactions: Transaction[] = response.Items.map(
+      (item): Transaction => ({
+        id: item.id,
+        assignorDocumentNumber: item.assignorDocumentNumber,
+        assignorName: item.assignorName,
+        payerDocumentNumber: item.payerDocumentNumber,
+        payerName: item.payerName,
+        investorDocumentNumber: item.investorDocumentNumber,
+        investorName: item.investorName,
+        amount: item.amount,
+        date: item.date,
+        dueDate: item.dueDate,
+        type: item.type,
+        completed: item.completed,
+        description: item.description,
+      })
+    ).sort((a, b) => compareDesc(a.date, b.date));
 
     return transactions;
   } catch (error) {
@@ -193,30 +214,30 @@ export const getTransactionsByDateRange = async (
   }
 };
 
-export const getTransactionsByCustomerDocumentNumber = async (
-  customerDocumentNumber: string
+export const getTransactionsByAssignorDocumentNumber = async (
+  assignorDocumentNumber: string
 ): Promise<Transaction[]> => {
   const { client, docClient } = getDynamoDB();
 
   try {
     const input: QueryCommandInput = {
       TableName: transactionsTableName,
-      IndexName: 'customerDocumentNumber-index',
+      IndexName: 'assignorDocumentNumber-index',
       ConsistentRead: false,
       KeyConditionExpression:
-        '#customerDocumentNumber = :customerDocumentNumber',
+        '#assignorDocumentNumber = :assignorDocumentNumber',
       ExpressionAttributeNames: {
-        '#customerDocumentNumber': 'customerDocumentNumber',
+        '#assignorDocumentNumber': 'assignorDocumentNumber',
       },
       ExpressionAttributeValues: {
-        ':customerDocumentNumber': customerDocumentNumber,
+        ':assignorDocumentNumber': assignorDocumentNumber,
       },
     };
     const command = new QueryCommand(input);
     const response: QueryCommandOutput = await docClient.send(command);
     console.info({
       service: 'transaction',
-      action: 'getTransactionsByCustomerDocumentNumber',
+      action: 'getTransactionsByAssignorDocumentNumber',
       input,
       command,
       response,
@@ -226,29 +247,36 @@ export const getTransactionsByCustomerDocumentNumber = async (
       return [];
     }
 
-    const transactions: Transaction[] = response.Items.map((item) => ({
-      id: item.id,
-      customerDocumentNumber: item.customerDocumentNumber,
-      customerName: item.customerName,
-      amount: item.amount,
-      date: item.date,
-      dueDate: item.dueDate,
-      type: item.type,
-      completed: item.completed,
-    })).sort((a, b) => a.date.localeCompare(b.date));
+    const transactions: Transaction[] = response.Items.map(
+      (item): Transaction => ({
+        id: item.id,
+        assignorDocumentNumber: item.assignorDocumentNumber,
+        assignorName: item.assignorName,
+        payerDocumentNumber: item.payerDocumentNumber,
+        payerName: item.payerName,
+        investorDocumentNumber: item.investorDocumentNumber,
+        investorName: item.investorName,
+        amount: item.amount,
+        date: item.date,
+        dueDate: item.dueDate,
+        type: item.type,
+        completed: item.completed,
+        description: item.description,
+      })
+    ).sort((a, b) => compareDesc(a.date, b.date));
 
     return transactions;
   } catch (error) {
     console.error({
       service: 'transaction',
-      action: 'getTransactionsByCustomerDocumentNumber',
+      action: 'getTransactionsByAssignorDocumentNumber',
       error,
     });
     throw error;
   } finally {
     console.info({
       service: 'transaction',
-      action: 'getTransactionsByCustomerDocumentNumber',
+      action: 'getTransactionsByAssignorDocumentNumber',
       message: 'DynamoDB client closed',
     });
 
@@ -257,8 +285,8 @@ export const getTransactionsByCustomerDocumentNumber = async (
   }
 };
 
-export const getTransactionsByCustomerDocumentNumberAndDateRange = async (
-  customerDocumentNumber: string,
+export const getTransactionsByAssignorDocumentNumberAndDateRange = async (
+  assignorDocumentNumber: string,
   startDate: Date,
   endDate: Date
 ): Promise<Transaction[]> => {
@@ -267,16 +295,16 @@ export const getTransactionsByCustomerDocumentNumberAndDateRange = async (
   try {
     const input: QueryCommandInput = {
       TableName: transactionsTableName,
-      IndexName: 'customerDocumentNumber-date-index',
+      IndexName: 'assignorDocumentNumber-date-index',
       ConsistentRead: false,
       KeyConditionExpression:
-        '#customerDocumentNumber = :customerDocumentNumber AND #date BETWEEN :startDate AND :endDate',
+        '#assignorDocumentNumber = :assignorDocumentNumber AND #date BETWEEN :startDate AND :endDate',
       ExpressionAttributeNames: {
-        '#customerDocumentNumber': 'customerDocumentNumber',
+        '#assignorDocumentNumber': 'assignorDocumentNumber',
         '#date': 'date',
       },
       ExpressionAttributeValues: {
-        ':customerDocumentNumber': customerDocumentNumber,
+        ':assignorDocumentNumber': assignorDocumentNumber,
         ':startDate': format(startDate, 'yyyy-MM-dd'),
         ':endDate': format(endDate, 'yyyy-MM-dd'),
       },
@@ -285,7 +313,7 @@ export const getTransactionsByCustomerDocumentNumberAndDateRange = async (
     const response: QueryCommandOutput = await docClient.send(command);
     console.info({
       service: 'transaction',
-      action: 'getTransactionsByIdAndDateRange',
+      action: 'getTransactionsByAssignorDocumentNumberAndDateRange',
       input,
       command,
       response,
@@ -295,29 +323,36 @@ export const getTransactionsByCustomerDocumentNumberAndDateRange = async (
       return [];
     }
 
-    const transactions: Transaction[] = response.Items.map((item) => ({
-      id: item.id,
-      customerDocumentNumber: item.customerDocumentNumber,
-      customerName: item.customerName,
-      amount: item.amount,
-      date: item.date,
-      dueDate: item.dueDate,
-      type: item.type,
-      completed: item.completed,
-    })).sort((a, b) => a.date.localeCompare(b.date));
+    const transactions: Transaction[] = response.Items.map(
+      (item): Transaction => ({
+        id: item.id,
+        assignorDocumentNumber: item.assignorDocumentNumber,
+        assignorName: item.assignorName,
+        payerDocumentNumber: item.payerDocumentNumber,
+        payerName: item.payerName,
+        investorDocumentNumber: item.investorDocumentNumber,
+        investorName: item.investorName,
+        amount: item.amount,
+        date: item.date,
+        dueDate: item.dueDate,
+        type: item.type,
+        completed: item.completed,
+        description: item.description,
+      })
+    ).sort((a, b) => compareDesc(a.date, b.date));
 
     return transactions;
   } catch (error) {
     console.error({
       service: 'transaction',
-      action: 'getTransactionsByIdAndDateRange',
+      action: 'getTransactionsByAssignorDocumentNumberAndDateRange',
       error,
     });
     throw error;
   } finally {
     console.info({
       service: 'transaction',
-      action: 'getTransactionsByIdAndDateRange',
+      action: 'getTransactionsByAssignorDocumentNumberAndDateRange',
       message: 'DynamoDB client closed',
     });
 
@@ -326,8 +361,8 @@ export const getTransactionsByCustomerDocumentNumberAndDateRange = async (
   }
 };
 
-export const getTransactionsByCustomerDocumentNumberAndDueDateRange = async (
-  customerDocumentNumber: string,
+export const getTransactionsByAssignorDocumentNumberAndDueDateRange = async (
+  assignorDocumentNumber: string,
   startDate: Date,
   endDate: Date
 ): Promise<Transaction[]> => {
@@ -336,16 +371,16 @@ export const getTransactionsByCustomerDocumentNumberAndDueDateRange = async (
   try {
     const input: QueryCommandInput = {
       TableName: transactionsTableName,
-      IndexName: 'customerDocumentNumber-dueDate-index',
+      IndexName: 'assignorDocumentNumber-dueDate-index',
       ConsistentRead: false,
       KeyConditionExpression:
-        '#customerDocumentNumber = :customerDocumentNumber AND #dueDate BETWEEN :startDate AND :endDate',
+        '#assignorDocumentNumber = :assignorDocumentNumber AND #dueDate BETWEEN :startDate AND :endDate',
       ExpressionAttributeNames: {
-        '#customerDocumentNumber': 'customerDocumentNumber',
+        '#assignorDocumentNumber': 'assignorDocumentNumber',
         '#dueDate': 'dueDate',
       },
       ExpressionAttributeValues: {
-        ':customerDocumentNumber': customerDocumentNumber,
+        ':assignorDocumentNumber': assignorDocumentNumber,
         ':startDate': format(startDate, 'yyyy-MM-dd'),
         ':endDate': format(endDate, 'yyyy-MM-dd'),
       },
@@ -354,7 +389,7 @@ export const getTransactionsByCustomerDocumentNumberAndDueDateRange = async (
     const response: QueryCommandOutput = await docClient.send(command);
     console.info({
       service: 'transaction',
-      action: 'getTransactionsByCustomerDocumentNumberAndDueDateRange',
+      action: 'getTransactionsByAssignorDocumentNumberAndDueDateRange',
       input,
       command,
       response,
@@ -364,98 +399,36 @@ export const getTransactionsByCustomerDocumentNumberAndDueDateRange = async (
       return [];
     }
 
-    const transactions: Transaction[] = response.Items.map((item) => ({
-      id: item.id,
-      customerDocumentNumber: item.customerDocumentNumber,
-      customerName: item.customerName,
-      amount: item.amount,
-      date: item.date,
-      dueDate: item.dueDate,
-      type: item.type,
-      completed: item.completed,
-    })).sort((a, b) => a.date.localeCompare(b.date));
+    const transactions: Transaction[] = response.Items.map(
+      (item): Transaction => ({
+        id: item.id,
+        assignorDocumentNumber: item.assignorDocumentNumber,
+        assignorName: item.assignorName,
+        payerDocumentNumber: item.payerDocumentNumber,
+        payerName: item.payerName,
+        investorDocumentNumber: item.investorDocumentNumber,
+        investorName: item.investorName,
+        amount: item.amount,
+        date: item.date,
+        dueDate: item.dueDate,
+        type: item.type,
+        completed: item.completed,
+        description: item.description,
+      })
+    ).sort((a, b) => compareDesc(a.date, b.date));
 
     return transactions;
   } catch (error) {
     console.error({
       service: 'transaction',
-      action: 'getTransactionsByCustomerDocumentNumberAndDueDateRange',
+      action: 'getTransactionsByAssignorDocumentNumberAndDueDateRange',
       error,
     });
     throw error;
   } finally {
     console.info({
       service: 'transaction',
-      action: 'getTransactionsByCustomerDocumentNumberAndDueDateRange',
-      message: 'DynamoDB client closed',
-    });
-
-    client.destroy();
-    docClient.destroy();
-  }
-};
-
-export const getTransactionsByCustomerDocumentNumberAndAmountRange = async (
-  customerDocumentNumber: string,
-  minAmount: number,
-  maxAmount: number
-): Promise<Transaction[]> => {
-  const { client, docClient } = getDynamoDB();
-
-  try {
-    const input: QueryCommandInput = {
-      TableName: transactionsTableName,
-      IndexName: 'customerDocumentNumber-amount-index',
-      ConsistentRead: false,
-      KeyConditionExpression:
-        '#customerDocumentNumber = :customerDocumentNumber AND #amount BETWEEN :minAmount AND :maxAmount',
-      ExpressionAttributeNames: {
-        '#customerDocumentNumber': 'customerDocumentNumber',
-        '#amount': 'amount',
-      },
-      ExpressionAttributeValues: {
-        ':customerDocumentNumber': customerDocumentNumber,
-        ':minAmount': minAmount,
-        ':maxAmount': maxAmount,
-      },
-    };
-    const command = new QueryCommand(input);
-    const response: QueryCommandOutput = await docClient.send(command);
-    console.info({
-      service: 'transaction',
-      action: 'getTransactionsByCustomerDocumentNumberAndAmountRange',
-      input,
-      command,
-      response,
-    });
-
-    if (!response.Items) {
-      return [];
-    }
-
-    const transactions: Transaction[] = response.Items.map((item) => ({
-      id: item.id,
-      customerDocumentNumber: item.customerDocumentNumber,
-      customerName: item.customerName,
-      amount: item.amount,
-      date: item.date,
-      dueDate: item.dueDate,
-      type: item.type,
-      completed: item.completed,
-    })).sort((a, b) => a.date.localeCompare(b.date));
-
-    return transactions;
-  } catch (error) {
-    console.error({
-      service: 'transaction',
-      action: 'getTransactionsByCustomerDocumentNumberAndAmountRange',
-      error,
-    });
-    throw error;
-  } finally {
-    console.info({
-      service: 'transaction',
-      action: 'getTransactionsByCustomerDocumentNumberAndAmountRange',
+      action: 'getTransactionsByAssignorDocumentNumberAndDueDateRange',
       message: 'DynamoDB client closed',
     });
 
@@ -472,13 +445,18 @@ export const putTransaction = async (transaction: Transaction) => {
       TableName: transactionsTableName,
       Item: {
         id: transaction.id,
-        customerDocumentNumber: transaction.customerDocumentNumber,
-        customerName: transaction.customerName,
+        assignorDocumentNumber: transaction.assignorDocumentNumber,
+        assignorName: transaction.assignorName,
+        payerDocumentNumber: transaction.payerDocumentNumber,
+        payerName: transaction.payerName,
+        investorDocumentNumber: transaction.investorDocumentNumber,
+        investorName: transaction.investorName,
         amount: transaction.amount,
         date: transaction.date,
         dueDate: transaction.dueDate,
         type: transaction.type,
         completed: transaction.completed,
+        description: transaction.description,
       },
     };
     const command = new PutCommand(input);

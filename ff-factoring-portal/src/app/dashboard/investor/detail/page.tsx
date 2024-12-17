@@ -14,18 +14,18 @@ import { useAuth } from 'react-oidc-context';
 import { useQueryClient } from '@tanstack/react-query';
 import { Loading } from '@/components/loading';
 
-const title = 'Detalhe do cliente';
+const title = 'Detalhe do Investidor';
 
-function Customer() {
+function Investor() {
   const auth = useAuth();
   const queryClient = useQueryClient();
   const router = useRouter();
   const documentNumber = useSearchParams().get('documentNumber');
   const {
-    data: customer,
+    data: investor,
     isError,
     isLoading,
-  } = useGetCustomer(documentNumber, auth.user?.access_token || '');
+  } = useGetCustomer(documentNumber || '', 'I', auth.user?.access_token || '');
   const {
     mutate: updateCustomer,
     isError: isUpdateError,
@@ -82,11 +82,12 @@ function Customer() {
       </CardHeader>
       <CardContent>
         {!isError ? (
-          !isLoading && customer ? (
+          !isLoading && investor ? (
             <CustomerForm
               onSubmit={onSubmit}
               isLoading={isUpdateLoading}
-              customer={customer}
+              type='I'
+              customer={investor}
             />
           ) : (
             <Loading />
@@ -102,7 +103,7 @@ function Customer() {
 export default function CustomerWrapper() {
   return (
     <Suspense>
-      <Customer />
+      <Investor />
     </Suspense>
   );
 }

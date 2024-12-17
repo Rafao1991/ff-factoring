@@ -24,7 +24,7 @@ import { useAuth } from 'react-oidc-context';
 
 const filter = {
   placeholder: 'Filtrar pelo nome do cliente...',
-  column: 'customerName',
+  column: 'assignorName',
 };
 
 const title = 'Operações';
@@ -57,7 +57,7 @@ export default function Transactions() {
       header: 'Tipo',
     },
     {
-      accessorKey: 'customerDocumentNumber',
+      accessorKey: 'assignorDocumentNumber',
       header: ({ column }) => {
         return (
           <Button
@@ -65,20 +65,20 @@ export default function Transactions() {
             variant='ghost'
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
-            CPF/CNPJ
+            CPF/CNPJ do Cedente
             <ArrowUpDown />
           </Button>
         );
       },
       cell: ({ row }) => {
-        const value: string = row.getValue('customerDocumentNumber');
+        const value: string = row.getValue('assignorDocumentNumber');
         const formattedValue = formatCpfCnpj(value ?? '');
 
         return <>{formattedValue}</>;
       },
     },
     {
-      accessorKey: 'customerName',
+      accessorKey: 'assignorName',
       header: ({ column }) => {
         return (
           <Button
@@ -86,7 +86,43 @@ export default function Transactions() {
             variant='ghost'
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
-            Cliente
+            Nome do Cedente
+            <ArrowUpDown />
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: 'payerDocumentNumber',
+      header: ({ column }) => {
+        return (
+          <Button
+            className='p-0'
+            variant='ghost'
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            CPF/CNPJ do Sacado
+            <ArrowUpDown />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const value: string = row.getValue('payerDocumentNumber');
+        const formattedValue = formatCpfCnpj(value ?? '');
+
+        return <>{formattedValue}</>;
+      },
+    },
+    {
+      accessorKey: 'payerName',
+      header: ({ column }) => {
+        return (
+          <Button
+            className='p-0'
+            variant='ghost'
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Nome do Sacado
             <ArrowUpDown />
           </Button>
         );
@@ -108,7 +144,7 @@ export default function Transactions() {
       },
       cell: ({ row }) => {
         const date: Date = row.getValue('date');
-        const formatted = format(date, 'PPP');
+        const formatted = format(date, 'P');
 
         return <>{formatted}</>;
       },
@@ -129,7 +165,7 @@ export default function Transactions() {
       },
       cell: ({ row }) => {
         const date: Date = row.getValue('dueDate');
-        const formatted = format(date, 'PPP');
+        const formatted = format(date, 'P');
 
         return <>{formatted}</>;
       },

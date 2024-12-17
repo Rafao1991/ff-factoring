@@ -45,30 +45,30 @@ export const dailyTransactionsHandler = async () => {
       return getSuccessResponse('Daily transactions', {
         startDate: format(startDate, 'PPP'),
         endDate: format(endDate, 'PPP'),
-        transactionsByCustomer: {},
+        transactionsByAssignor: {},
       });
     }
 
-    const transactionsByCustomer = transactions.reduce((acc, transaction) => {
-      const customerDocumentNumber = transaction.customerDocumentNumber;
-      if (!acc[customerDocumentNumber]) {
-        acc[customerDocumentNumber] = {
-          name: transaction.customerName,
+    const transactionsByAssignor = transactions.reduce((acc, transaction) => {
+      const assignorDocumentNumber = transaction.assignorDocumentNumber;
+      if (!acc[assignorDocumentNumber]) {
+        acc[assignorDocumentNumber] = {
+          name: transaction.assignorName,
           checks: [],
           tickets: [],
           total: 0,
         };
       }
 
-      acc[customerDocumentNumber].name = transaction.customerName;
-      acc[customerDocumentNumber].total += transaction.amount;
+      acc[assignorDocumentNumber].name = transaction.assignorName;
+      acc[assignorDocumentNumber].total += transaction.amount;
 
       switch (transaction.type) {
         case 'cheque':
-          acc[customerDocumentNumber].checks.push(transaction);
+          acc[assignorDocumentNumber].checks.push(transaction);
           break;
         case 'duplicata':
-          acc[customerDocumentNumber].tickets.push(transaction);
+          acc[assignorDocumentNumber].tickets.push(transaction);
           break;
         default:
           break;
@@ -80,7 +80,7 @@ export const dailyTransactionsHandler = async () => {
     const response: DailyTransactions = {
       startDate: format(startDate, 'PP'),
       endDate: format(endDate, 'PP'),
-      transactionsByCustomer,
+      transactionsByAssignor: transactionsByAssignor,
     };
 
     console.info({

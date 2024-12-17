@@ -18,10 +18,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useAuth } from 'react-oidc-context';
 
-const title = 'Novo cliente';
-const description = 'Cadastre um novo cliente.';
+const title = 'Novo Investidor';
+const description = 'Cadastre um novo investidor.';
 
-export default function NewCustomer() {
+export default function NewAssignor() {
   const auth = useAuth();
   const router = useRouter();
   const {
@@ -42,7 +42,7 @@ export default function NewCustomer() {
     if (isCreationError) {
       toast({
         variant: 'destructive',
-        title: 'Erro ao criar a operação',
+        title: 'Erro ao criar o investidor',
         description: `Erro inesperado - ${creationError.message}`,
       });
     }
@@ -63,7 +63,11 @@ export default function NewCustomer() {
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <CustomerForm onSubmit={onSubmit} isLoading={isCreationLoading} />
+        <CustomerForm
+          onSubmit={onSubmit}
+          isLoading={isCreationLoading}
+          type='I'
+        />
       </CardContent>
     </Card>
   );

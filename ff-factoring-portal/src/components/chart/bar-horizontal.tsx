@@ -26,9 +26,9 @@ import {
 interface BarChartHorizontalProps {
   title: string;
   footer: string;
-  startDate: Date;
-  endDate: Date;
-  totalEarningsByCustomer: Record<string, CustomerEarnings>;
+  startDate: string;
+  endDate: string;
+  totalEarningsByAssignor: Record<string, AssignorEarnings>;
 }
 
 export function BarChartHorizontal({
@@ -36,7 +36,7 @@ export function BarChartHorizontal({
   footer,
   startDate,
   endDate,
-  totalEarningsByCustomer,
+  totalEarningsByAssignor,
 }: BarChartHorizontalProps) {
   const chartData: {
     label: string;
@@ -53,8 +53,8 @@ export function BarChartHorizontal({
     },
   };
 
-  Object.keys(totalEarningsByCustomer).forEach((customer) => {
-    const customerData = totalEarningsByCustomer[customer];
+  Object.keys(totalEarningsByAssignor).forEach((customer) => {
+    const customerData = totalEarningsByAssignor[customer];
 
     chartData.push({
       value: customerData.total,

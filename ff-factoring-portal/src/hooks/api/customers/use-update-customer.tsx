@@ -10,8 +10,18 @@ const updateCustomer = async (
     throw new Error('Token is required');
   }
 
+  const { type } = customer;
+
+  if (!type) {
+    throw new Error('Type is required');
+  }
+
+  if (!documentNumber) {
+    throw new Error('Document number is required');
+  }
+
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/customers/${documentNumber}`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/customers/${documentNumber}/${type}`,
     {
       method: 'PUT',
       headers: {

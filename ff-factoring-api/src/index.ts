@@ -13,10 +13,9 @@ export {
   getTransactionHandler,
   listTransactionsHandler,
   updateTransactionHandler,
-  getTransactionsByCustomerDocumentNumberHandler,
-  getTransactionsByCustomerDocumentNumberAndDateRangeHandler,
-  getTransactionsByCustomerDocumentNumberAndDueDateRangeHandler,
-  getTransactionsByCustomerDocumentNumberAndAmountRangeHandler,
+  getTransactionsByAssignorDocumentNumberHandler,
+  getTransactionsByAssignorDocumentNumberAndDateRangeHandler,
+  getTransactionsByAssignorDocumentNumberAndDueDateRangeHandler,
 } from '@/handlers/transaction';
 
 export {

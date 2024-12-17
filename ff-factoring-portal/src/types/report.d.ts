@@ -1,4 +1,4 @@
-type CustomerEarnings = TotalEarnings & {
+type AssignorEarnings = TotalEarnings & {
   name: string;
 };
 
@@ -9,14 +9,14 @@ type TotalEarnings = {
 };
 
 type LastSixMonthsEarnings = {
-  startDate: Date;
-  endDate: Date;
+  startDate: string;
+  endDate: string;
   totalEarnings: TotalEarnings;
   totalEarningsByMonth: Record<string, TotalEarnings>;
-  totalEarningsByCustomer: Record<string, CustomerEarnings>;
+  totalEarningsByAssignor: Record<string, AssignorEarnings>;
 };
 
-type DailyTransactionsByCustomer = {
+type DailyTransaction = {
   name: string;
   checks: Transaction[];
   tickets: Transaction[];
@@ -26,5 +26,5 @@ type DailyTransactionsByCustomer = {
 type DailyTransactions = {
   startDate: string;
   endDate: string;
-  transactionsByCustomer: Record<string, DailyTransactionsByCustomer>;
+  transactionsByAssignor: Record<string, DailyTransaction>;
 };

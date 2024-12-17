@@ -4,7 +4,16 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/toaster';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Files, Home, LogOut, Users, Wallet } from 'lucide-react';
+import {
+  Files,
+  HandCoins,
+  Handshake,
+  Home,
+  Landmark,
+  LogOut,
+  Users,
+  Wallet,
+} from 'lucide-react';
 
 const queryClient = new QueryClient();
 
@@ -20,9 +29,24 @@ export default function DashboardLayout({
       icon: Home,
     },
     {
-      title: 'Clientes',
-      url: '/dashboard/customer',
+      title: 'Estoque',
+      url: '/dashboard/stock',
+      icon: Landmark,
+    },
+    {
+      title: 'Cedentes',
+      url: '/dashboard/assignor',
       icon: Users,
+    },
+    {
+      title: 'Sacados',
+      url: '/dashboard/payer',
+      icon: HandCoins,
+    },
+    {
+      title: 'Investidores',
+      url: '/dashboard/investor',
+      icon: Handshake,
     },
     {
       title: 'Operações',

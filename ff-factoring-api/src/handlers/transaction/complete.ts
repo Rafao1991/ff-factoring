@@ -33,13 +33,18 @@ export const completeTransactionHandler = async (event: APIGatewayEvent) => {
 
     const transaction: Transaction = {
       id: existingTransaction.id,
-      customerDocumentNumber: existingTransaction.customerDocumentNumber,
-      customerName: existingTransaction.customerName,
+      assignorDocumentNumber: existingTransaction.assignorDocumentNumber,
+      assignorName: existingTransaction.assignorName,
+      payerDocumentNumber: existingTransaction.payerDocumentNumber,
+      payerName: existingTransaction.payerName,
+      investorDocumentNumber: existingTransaction.investorDocumentNumber,
+      investorName: existingTransaction.investorName,
       amount: existingTransaction.amount,
       date: existingTransaction.date,
       dueDate: existingTransaction.dueDate,
       type: existingTransaction.type,
       completed: true,
+      description: existingTransaction.description,
     };
     console.info({ transaction });
 

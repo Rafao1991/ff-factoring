@@ -3,23 +3,23 @@ import {
   getSuccessResponse,
   getInternalServerErrorResponse,
 } from '@/helpers/api-wrapper';
-import { getTransactionsByCustomerDocumentNumberAndDateRange } from '@/services/transaction';
+import { getTransactionsByAssignorDocumentNumberAndDateRange } from '@/services/transaction';
 import { APIGatewayEvent } from 'aws-lambda';
 import { isValid, toDate } from 'date-fns';
 
-export const getTransactionsByCustomerDocumentNumberAndDateRangeHandler =
+export const getTransactionsByAssignorDocumentNumberAndDateRangeHandler =
   async (event: APIGatewayEvent) => {
     console.info({ event });
 
-    const customerDocumentNumber =
-      event.queryStringParameters?.customerDocumentNumber;
+    const assignorDocumentNumber =
+      event.queryStringParameters?.assignorDocumentNumber;
     const startDate = event.queryStringParameters?.startDate;
     const endDate = event.queryStringParameters?.endDate;
-    console.info({ customerDocumentNumber, startDate, endDate });
+    console.info({ assignorDocumentNumber, startDate, endDate });
 
-    if (!customerDocumentNumber) {
-      console.info({ message: 'Missing customerDocumentNumber' });
-      return getBadRequestResponse('Missing customerDocumentNumber');
+    if (!assignorDocumentNumber) {
+      console.info({ message: 'Missing assignorDocumentNumber' });
+      return getBadRequestResponse('Missing assignorDocumentNumber');
     }
 
     if (!startDate || !isValid(new Date(startDate))) {
@@ -34,8 +34,8 @@ export const getTransactionsByCustomerDocumentNumberAndDateRangeHandler =
 
     try {
       const transactions =
-        await getTransactionsByCustomerDocumentNumberAndDateRange(
-          customerDocumentNumber,
+        await getTransactionsByAssignorDocumentNumberAndDateRange(
+          assignorDocumentNumber,
           toDate(startDate),
           toDate(endDate)
         );
@@ -45,7 +45,7 @@ export const getTransactionsByCustomerDocumentNumberAndDateRangeHandler =
     } catch (error) {
       console.error({ error });
       return getInternalServerErrorResponse(
-        'Error getting transactions by customerDocumentNumber and date range',
+        'Error getting transactions by assignorDocumentNumber and date range',
         error
       );
     }

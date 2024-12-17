@@ -21,21 +21,21 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 const filter = {
-  placeholder: 'Filtrar pelo nome do cliente...',
+  placeholder: 'Filtrar pelo nome do cedente...',
   column: 'name',
 };
 
-const title = 'Clientes';
-const description = 'Lista de clientes cadastrados.';
+const title = 'Cedentes';
+const description = 'Lista de cedentes cadastrados.';
 
-const newTransactionButton = 'Novo cliente';
+const newTransactionButton = 'Novo cedente';
 
-export default function Customers() {
+export default function Assignors() {
   const auth = useAuth();
   const queryClient = useQueryClient();
   const router = useRouter();
   const {
-    data: customers,
+    data: assignors,
     isLoading,
     isError,
   } = useListCustomers(auth.user?.access_token || '');
@@ -91,7 +91,7 @@ export default function Customers() {
 
         return (
           <div className='flex flex-col gap-2'>
-            {emails.map((email) => (
+            {emails?.map((email) => (
               <p key={email}>{email}</p>
             ))}
           </div>
@@ -106,7 +106,7 @@ export default function Customers() {
 
         return (
           <div className='flex flex-col gap-2'>
-            {phones.map((phone) => (
+            {phones?.map((phone) => (
               <p key={phone}>{formatPhone(phone)}</p>
             ))}
           </div>
@@ -124,7 +124,7 @@ export default function Customers() {
             variant='ghost'
             onClick={() =>
               router.push(
-                `/dashboard/customer/detail?documentNumber=${row.getValue(
+                `/dashboard/assignor/detail?documentNumber=${row.getValue(
                   'documentNumber'
                 )}`
               )
@@ -144,7 +144,7 @@ export default function Customers() {
   return (
     <>
       {!isError ? (
-        !isLoading && customers ? (
+        !isLoading && assignors ? (
           <Card>
             <CardHeader>
               <div className='flex items-center justify-between space-x-2'>
@@ -155,14 +155,18 @@ export default function Customers() {
                 <Button
                   variant='default'
                   size='lg'
-                  onClick={() => router.push('/dashboard/customer/new')}
+                  onClick={() => router.push('/dashboard/assignor/new')}
                 >
                   {newTransactionButton}
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              <DataTable columns={columns} data={customers} filter={filter} />
+              <DataTable
+                columns={columns}
+                data={assignors.filter((assignor) => assignor.type === 'A')}
+                filter={filter}
+              />
             </CardContent>
           </Card>
         ) : (

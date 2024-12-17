@@ -56,8 +56,8 @@ export default function DashboardPage() {
               footer='Receita total dos últimos seis meses'
               startDate={lastSixMonthsEarnings.startDate}
               endDate={lastSixMonthsEarnings.endDate}
-              totalEarningsByCustomer={
-                lastSixMonthsEarnings.totalEarningsByCustomer
+              totalEarningsByAssignor={
+                lastSixMonthsEarnings.totalEarningsByAssignor
               }
             />
           </div>

@@ -18,8 +18,8 @@ import { Download } from 'lucide-react';
 const getChecks = (data: DailyTransactions): Transaction[] => {
   const checks: Transaction[] = [];
 
-  Object.keys(data.transactionsByCustomer).forEach((customer) =>
-    data.transactionsByCustomer[customer].checks.forEach((transaction) =>
+  Object.keys(data.transactionsByAssignor).forEach((assignor) =>
+    data.transactionsByAssignor[assignor].checks.forEach((transaction) =>
       checks.push(transaction)
     )
   );
@@ -30,8 +30,8 @@ const getChecks = (data: DailyTransactions): Transaction[] => {
 const getTickets = (data: DailyTransactions) => {
   const tickets: Transaction[] = [];
 
-  Object.keys(data.transactionsByCustomer).forEach((customer) =>
-    data.transactionsByCustomer[customer].tickets.forEach((transaction) =>
+  Object.keys(data.transactionsByAssignor).forEach((assignor) =>
+    data.transactionsByAssignor[assignor].tickets.forEach((transaction) =>
       tickets.push(transaction)
     )
   );
@@ -41,17 +41,17 @@ const getTickets = (data: DailyTransactions) => {
 
 const columns: ColumnDef<Transaction>[] = [
   {
-    accessorKey: 'customerDocumentNumber',
+    accessorKey: 'assignorDocumentNumber',
     header: 'CPF/CNPJ',
     cell: ({ row }) => {
-      const value: string = row.getValue('customerDocumentNumber');
+      const value: string = row.getValue('assignorDocumentNumber');
       const formattedValue = formatCpfCnpj(value ?? '');
 
       return <>{formattedValue}</>;
     },
   },
   {
-    accessorKey: 'customerName',
+    accessorKey: 'assignorName',
     header: 'Nome',
   },
   {
@@ -138,9 +138,9 @@ export default function DailyTransactions({ auth }: DailyTransactionsProps) {
       },
     };
 
-    Object.keys(data.transactionsByCustomer).forEach((customer) => {
+    Object.keys(data.transactionsByAssignor).forEach((assignor) => {
       const { name, checks, tickets, total } =
-        data.transactionsByCustomer[customer];
+        data.transactionsByAssignor[assignor];
 
       doc.setFont(doc.getFont().fontName, 'bold');
       doc.setFontSize(16);
@@ -148,7 +148,7 @@ export default function DailyTransactions({ auth }: DailyTransactionsProps) {
 
       doc.setFont(doc.getFont().fontName, 'normal', 500);
       doc.text(`CPF/CNPJ:`, 18, 30);
-      doc.text(`${formatCpfCnpj(customer)}`, 48, 30);
+      doc.text(`${formatCpfCnpj(assignor)}`, 48, 30);
       doc.text(`Nome:`, 18, 36);
       doc.text(`${name}`, 48, 36);
       doc.text(`Valor total:`, 18, 42);

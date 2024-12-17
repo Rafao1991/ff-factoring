@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 
 const getCustomer = async (
-  documentNumber: string | null,
+  documentNumber: string,
+  customerType: CustomerType,
   token: string
 ): Promise<Customer> => {
   if (!token) {
@@ -10,8 +11,10 @@ const getCustomer = async (
 
   if (!documentNumber) throw new Error('Document number is required');
 
+  if (!customerType) throw new Error('Customer type is required');
+
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/customers/${documentNumber}`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/customers/${documentNumber}/${customerType}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -23,12 +26,13 @@ const getCustomer = async (
 };
 
 export default function useGetCustomer(
-  documentNumber: string | null,
+  documentNumber: string,
+  customerType: CustomerType,
   token: string
 ) {
   const query = useQuery({
     queryKey: ['getCustomer', documentNumber],
-    queryFn: () => getCustomer(documentNumber, token),
+    queryFn: () => getCustomer(documentNumber, customerType, token),
   });
 
   return query;

@@ -27,7 +27,21 @@ resources:
         AttributeDefinitions:
           - AttributeName: documentNumber
             AttributeType: 'S'
+          - AttributeName: type
+            AttributeType: 'S'
           - AttributeName: name
+            AttributeType: 'S'
+          - AttributeName: address
+            AttributeType: 'S'
+          - AttributeName: addressNumber
+            AttributeType: 'S'
+          - AttributeName: addressComplement
+            AttributeType: 'S'
+          - AttributeName: city
+            AttributeType: 'S'
+          - AttributeName: state
+            AttributeType: 'S'
+          - AttributeName: zip
             AttributeType: 'S'
           - AttributeName: emails
             AttributeType: 'SS'
@@ -40,6 +54,8 @@ resources:
         KeySchema:
           - AttributeName: documentNumber
             KeyType: HASH
+          - AttributeName: type
+            KeyType: RANGE
         SSESpecification:
           SSEEnabled: false
         TableClass: STANDARD
@@ -55,9 +71,17 @@ resources:
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: 'S'
-          - AttributeName: customerDocumentNumber
+          - AttributeName: assignorDocumentNumber
             AttributeType: 'S'
-          - AttributeName: customerName
+          - AttributeName: assignorName
+            AttributeType: 'S'
+          - AttributeName: payerDocumentNumber
+            AttributeType: 'S'
+          - AttributeName: payerName
+            AttributeType: 'S'
+          - AttributeName: investorDocumentNumber
+            AttributeType: 'S'
+          - AttributeName: investorName
             AttributeType: 'S'
           - AttributeName: amount
             AttributeType: 'N'
@@ -69,6 +93,8 @@ resources:
             AttributeType: 'S'
           - AttributeName: completed
             AttributeType: 'B'
+          - AttributeName: description
+            AttributeType: 'S'
         BillingMode: PAY_PER_REQUEST
         OnDemandThroughput:
           ReadCapacityUnits: 1
@@ -77,20 +103,18 @@ resources:
           - AttributeName: id
             KeyType: HASH
         GlobalSecondaryIndexes:
-          - IndexName: customerDocumentNumber-amount-index
+          - IndexName: assignorDocumentNumber-index
             KeySchema:
-              - AttributeName: customerDocumentNumber
+              - AttributeName: assignorDocumentNumber
                 KeyType: HASH
-              - AttributeName: amount
-                KeyType: RANGE
             Projection:
               amountProjectionType: ALL
             ProvisionedThroughput:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
-          - IndexName: customerDocumentNumber-date-index
+          - IndexName: assignorDocumentNumber-date-index
             KeySchema:
-              - AttributeName: customerDocumentNumber
+              - AttributeName: assignorDocumentNumber
                 KeyType: HASH
               - AttributeName: date
                 KeyType: RANGE
@@ -99,9 +123,9 @@ resources:
             ProvisionedThroughput:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
-          - IndexName: customerDocumentNumber-dueDate-index
+          - IndexName: assignorDocumentNumber-dueDate-index
             KeySchema:
-              - AttributeName: customerDocumentNumber
+              - AttributeName: assignorDocumentNumber
                 KeyType: HASH
               - AttributeName: dueDate
                 KeyType: RANGE
@@ -110,9 +134,9 @@ resources:
             ProvisionedThroughput:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
-          - IndexName: customerDocumentNumber-index
+          - IndexName: payerDocumentNumber-index
             KeySchema:
-              - AttributeName: customerDocumentNumber
+              - AttributeName: payerDocumentNumber
                 KeyType: HASH
             Projection:
               amountProjectionType: ALL
@@ -194,7 +218,7 @@ functions:
     handler: src/index.updateCustomerHandler
     events:
       - httpApi:
-          path: /customers/{documentNumber}
+          path: /customers/{documentNumber}/{type}
           method: put
           authorizer:
             name: ApiAuthorizer
@@ -212,7 +236,7 @@ functions:
     handler: src/index.getCustomerHandler
     events:
       - httpApi:
-          path: /customers/{documentNumber}
+          path: /customers/{documentNumber}/{type}
           method: get
           authorizer:
             name: ApiAuthorizer
@@ -261,39 +285,30 @@ functions:
           method: get
           authorizer:
             name: ApiAuthorizer
-  getTransactionsByCustomerDocumentNumber:
-    name: ${sls:stage}-${self:service}-getTransactionsByCustomerDocumentNumber
-    handler: src/index.getTransactionsByCustomerDocumentNumberHandler
+  getTransactionsByAssignorDocumentNumber:
+    name: ${sls:stage}-${self:service}-getTransactionsByAssignorDocumentNumber
+    handler: src/index.getTransactionsByAssignorDocumentNumberHandler
     events:
       - httpApi:
           path: /transactions/customer
           method: get
           authorizer:
             name: ApiAuthorizer
-  getTransactionsByCustomerDocumentNumberAndDateRange:
-    name: ${sls:stage}-${self:service}-getTransactionsByCustomerDocumentNumberAndDateRange
-    handler: src/index.getTransactionsByCustomerDocumentNumberAndDateRangeHandler
+  getTransactionsByAssignorDocumentNumberAndDateRange:
+    name: ${sls:stage}-${self:service}-getTransactionsByAssignorDocumentNumberAndDateRange
+    handler: src/index.getTransactionsByAssignorDocumentNumberAndDateRangeHandler
     events:
       - httpApi:
           path: /transactions/customer-date
           method: get
           authorizer:
             name: ApiAuthorizer
-  getTransactionsByCustomerDocumentNumberAndDueDateRange:
-    name: ${sls:stage}-${self:service}-getTransactionsByCustomerDocumentNumberAndDueDateRange
-    handler: src/index.getTransactionsByCustomerDocumentNumberAndDueDateRangeHandler
+  getTransactionsByAssignorDocumentNumberAndDueDateRange:
+    name: ${sls:stage}-${self:service}-getTransactionsByAssignorDocumentNumberAndDueDateRange
+    handler: src/index.getTransactionsByAssignorDocumentNumberAndDueDateRangeHandler
     events:
       - httpApi:
           path: /transactions/customer-due-date
-          method: get
-          authorizer:
-            name: ApiAuthorizer
-  getTransactionsByCustomerDocumentNumberAndAmountRange:
-    name: ${sls:stage}-${self:service}-getTransactionsByCustomerDocumentNumberAndAmountRange
-    handler: src/index.getTransactionsByCustomerDocumentNumberAndAmountRangeHandler
-    events:
-      - httpApi:
-          path: /transactions/customer-amount
           method: get
           authorizer:
             name: ApiAuthorizer

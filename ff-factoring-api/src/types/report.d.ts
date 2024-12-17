@@ -1,4 +1,4 @@
-type CustomerEarnings = TotalEarnings & {
+type AssignorEarnings = TotalEarnings & {
   name: string;
 };
 
@@ -13,7 +13,7 @@ type LastSixMonthsEarnings = {
   endDate: string;
   totalEarnings: TotalEarnings;
   totalEarningsByMonth: Record<string, TotalEarnings>;
-  totalEarningsByCustomer: Record<string, CustomerEarnings>;
+  totalEarningsByAssignor: Record<string, AssignorEarnings>;
 };
 
 type DailyTransaction = {
@@ -26,5 +26,5 @@ type DailyTransaction = {
 type DailyTransactions = {
   startDate: string;
   endDate: string;
-  transactionsByCustomer: Record<string, DailyTransaction>;
+  transactionsByAssignor: Record<string, DailyTransaction>;
 };

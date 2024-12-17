@@ -36,7 +36,14 @@ export const scanCustomers = async (): Promise<Customer[]> => {
 
     const customers: Customer[] = response.Items.map((item) => ({
       documentNumber: item.documentNumber,
+      type: item.type,
       name: item.name,
+      address: item.address,
+      addressNumber: item.addressNumber,
+      addressComplement: item.addressComplement,
+      city: item.city,
+      state: item.state,
+      zip: item.zip,
       emails: item.emails,
       phones: item.phones,
     })).sort((a, b) => a.name.localeCompare(b.name));
@@ -62,7 +69,8 @@ export const scanCustomers = async (): Promise<Customer[]> => {
 };
 
 export const getCustomerByDocumentNumber = async (
-  documentNumber: string
+  documentNumber: string,
+  type: CustomerType
 ): Promise<Customer | undefined> => {
   const { client, docClient } = getDynamoDB();
 
@@ -79,6 +87,7 @@ export const getCustomerByDocumentNumber = async (
       TableName: customerTableName,
       Key: {
         documentNumber,
+        type,
       },
       ConsistentRead: true,
     };
@@ -98,7 +107,14 @@ export const getCustomerByDocumentNumber = async (
 
     const customer: Customer = {
       documentNumber: response.Item.documentNumber,
+      type: response.Item.type,
       name: response.Item.name,
+      address: response.Item.address,
+      addressNumber: response.Item.addressNumber,
+      addressComplement: response.Item.addressComplement,
+      city: response.Item.city,
+      state: response.Item.state,
+      zip: response.Item.zip,
       emails: response.Item.emails,
       phones: response.Item.phones,
     };
@@ -131,7 +147,14 @@ export const putCustomer = async (customer: Customer) => {
       TableName: customerTableName,
       Item: {
         documentNumber: customer.documentNumber,
+        type: customer.type,
         name: customer.name,
+        address: customer.address,
+        addressNumber: customer.addressNumber,
+        addressComplement: customer.addressComplement,
+        city: customer.city,
+        state: customer.state,
+        zip: customer.zip,
         emails: customer.emails,
         phones: customer.phones,
       },

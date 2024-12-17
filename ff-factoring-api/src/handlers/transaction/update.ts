@@ -22,14 +22,14 @@ export const updateTransactionHandler = async (event: APIGatewayEvent) => {
     return getBadRequestResponse('Missing id');
   }
 
-  if (!body.customerDocumentNumber) {
-    console.info({ message: 'Missing customerDocumentNumber' });
-    return getBadRequestResponse('Missing customerDocumentNumber');
+  if (!body.assignorDocumentNumber) {
+    console.info({ message: 'Missing assignorDocumentNumber' });
+    return getBadRequestResponse('Missing assignorDocumentNumber');
   }
 
-  if (!body.customerName) {
-    console.info({ message: 'Missing customerName' });
-    return getBadRequestResponse('Missing customerName');
+  if (!body.assignorName) {
+    console.info({ message: 'Missing assignorName' });
+    return getBadRequestResponse('Missing assignorName');
   }
 
   if (!body.amount) {
@@ -63,13 +63,18 @@ export const updateTransactionHandler = async (event: APIGatewayEvent) => {
 
     const transaction: Transaction = {
       id: existingTransaction.id,
-      customerDocumentNumber: body.customerDocumentNumber,
-      customerName: body.customerName,
+      assignorDocumentNumber: body.assignorDocumentNumber,
+      assignorName: body.assignorName,
+      payerDocumentNumber: body.payerDocumentNumber,
+      payerName: body.payerName,
+      investorDocumentNumber: body.investorDocumentNumber,
+      investorName: body.investorName,
       amount: body.amount,
       date: body.date,
       dueDate: body.dueDate,
       type: body.type,
-      completed: existingTransaction.completed,
+      completed: false,
+      description: body.description,
     };
     console.info({ transaction });
 
@@ -78,6 +83,9 @@ export const updateTransactionHandler = async (event: APIGatewayEvent) => {
     return getNoContentResponse();
   } catch (error) {
     console.error({ error });
-    return getInternalServerErrorResponse('Error creating customer', error);
+    return getInternalServerErrorResponse(
+      'Error while updating transaction',
+      error
+    );
   }
 };

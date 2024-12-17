@@ -17,6 +17,11 @@ export const createCustomerHandler = async (event: APIGatewayProxyEvent) => {
     return getBadRequestResponse('Missing documentNumber');
   }
 
+  if (!body.type) {
+    console.info({ message: 'Missing type' });
+    return getBadRequestResponse('Missing type');
+  }
+
   if (!body.name) {
     console.info({ message: 'Missing name' });
     return getBadRequestResponse('Missing name');
@@ -24,7 +29,7 @@ export const createCustomerHandler = async (event: APIGatewayProxyEvent) => {
 
   try {
     const existingCustomer: Customer | undefined =
-      await getCustomerByDocumentNumber(body.documentNumber);
+      await getCustomerByDocumentNumber(body.documentNumber, body.type);
     console.info({ existingCustomer });
 
     if (existingCustomer) {
@@ -36,7 +41,14 @@ export const createCustomerHandler = async (event: APIGatewayProxyEvent) => {
 
     const customer: Customer = {
       documentNumber: body.documentNumber,
+      type: body.type,
       name: body.name,
+      address: body.address,
+      addressNumber: body.addressNumber,
+      addressComplement: body.addressComplement,
+      city: body.city,
+      state: body.state,
+      zip: body.zip,
       emails: body.emails,
       phones: body.phones,
     };

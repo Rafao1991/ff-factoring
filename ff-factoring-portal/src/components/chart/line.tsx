@@ -22,8 +22,8 @@ interface LineChartSimpleProps {
   title: string;
   label: string;
   footer: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: string;
+  endDate: string;
   totalEarningsByMonth: Record<string, TotalEarnings>;
 }
 

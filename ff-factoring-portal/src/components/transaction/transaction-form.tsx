@@ -25,8 +25,9 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Textarea } from '@/components/ui/textarea';
 import useListCustomers from '@/hooks/api/customers/use-list-customers';
-import { cn } from '@/lib/utils';
+import { cn, formatCpfCnpj } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
@@ -42,12 +43,24 @@ const minDate = new Date(today.getFullYear(), 0, 1);
 const typeTitle = 'Qual o tipo da operação? *';
 const typeIsMandatory = 'O tipo da operação é obrigatório';
 
-const customerTitle = 'Nome do cliente *';
-const customerIsMandatory = 'O nome do cliente é obrigatório';
-const customerIsTooShort = 'O nome do cliente deve ter pelo menos 2 caracteres';
-const customerSelect = 'Selecione um cliente';
-const customerSearchTitle = 'Buscar por nome do cliente...';
-const customerNotFound = 'Nenhum cliente encontrado';
+const assignorTitle = 'Cedente *';
+const assignorIsMandatory = 'O cedente é obrigatório';
+const assignorIsTooShort = 'O cedente deve ter pelo menos 2 caracteres';
+const assignorSelect = 'Selecione um cedente';
+const assignorSearchTitle = 'Buscar por cedente...';
+const assignorNotFound = 'Nenhum cedente encontrado';
+
+const payerTitle = 'Sacado *';
+const payerIsMandatory = 'O sacado é obrigatório';
+const payerIsTooShort = 'O sacado deve ter pelo menos 2 caracteres';
+const payerSelect = 'Selecione um sacado';
+const payerSearchTitle = 'Buscar por sacado...';
+const payerNotFound = 'Nenhum sacado encontrado';
+
+const investorTitle = 'Investidor';
+const investorSelect = 'Selecione um investidor';
+const investorSearchTitle = 'Buscar por investidor...';
+const investorNotFound = 'Nenhum investidor encontrado';
 
 const amountTitle = 'Valor *';
 const amountIsMandatory = 'O valor da operação é obrigatório';
@@ -74,21 +87,38 @@ enum TransactionType {
   Ticket = 'duplicata',
 }
 
-interface CustomerSelect {
+interface SelectData {
   label: string;
   value: string;
 }
 
+interface PageData {
+  assignors: SelectData[];
+  payers: SelectData[];
+  investors: SelectData[];
+}
+
 const transactionFormSchema = z.object({
-  customerDocumentNumber: z.string(),
-  customerName: z
+  assignorDocumentNumber: z.string().trim(),
+  assignorName: z
     .string({
-      required_error: customerIsMandatory,
+      required_error: assignorIsMandatory,
     })
     .trim()
     .min(2, {
-      message: customerIsTooShort,
+      message: assignorIsTooShort,
     }),
+  payerDocumentNumber: z.string().trim(),
+  payerName: z
+    .string({
+      required_error: payerIsMandatory,
+    })
+    .trim()
+    .min(2, {
+      message: payerIsTooShort,
+    }),
+  investorDocumentNumber: z.string().trim().optional(),
+  investorName: z.string().trim().optional(),
   date: z
     .date({
       required_error: dateIsMandatory,
@@ -113,6 +143,7 @@ const transactionFormSchema = z.object({
   type: z.nativeEnum(TransactionType, {
     required_error: typeIsMandatory,
   }),
+  description: z.string().trim().optional(),
 });
 
 export default function TransactionForm({
@@ -127,18 +158,61 @@ export default function TransactionForm({
   const auth = useAuth();
   const queryClient = useQueryClient();
   const { data, isSuccess } = useListCustomers(auth.user?.access_token || '');
-  const [customers, setCustomers] = useState<CustomerSelect[] | null>(null);
+  const [selectData, setSelectData] = useState<PageData>({
+    assignors: [],
+    payers: [],
+    investors: [],
+  });
 
   useEffect(() => {
     if (!isSuccess) return;
-    const customers = data.map<CustomerSelect>((customerData) => {
-      return {
-        label: customerData.name,
-        value: customerData.documentNumber,
-      };
+
+    const assignors: SelectData[] = [];
+    const payers: SelectData[] = [];
+    const investors: SelectData[] = [
+      {
+        label: 'Selecione um investidor',
+        value: '',
+      },
+    ];
+
+    data.forEach((customer: Customer) => {
+      switch (customer.type) {
+        case 'A': {
+          assignors.push({
+            label: `${formatCpfCnpj(customer.documentNumber)} : ${
+              customer.name
+            }`,
+            value: customer.documentNumber,
+          });
+          return;
+        }
+        case 'P': {
+          payers.push({
+            label: `${formatCpfCnpj(customer.documentNumber)} : ${
+              customer.name
+            }`,
+            value: customer.documentNumber,
+          });
+          return;
+        }
+        case 'I': {
+          investors.push({
+            label: `${formatCpfCnpj(customer.documentNumber)} : ${
+              customer.name
+            }`,
+            value: customer.documentNumber,
+          });
+          return;
+        }
+      }
     });
 
-    setCustomers(customers);
+    setSelectData({
+      assignors,
+      payers,
+      investors,
+    });
   }, [isSuccess, data]);
 
   useEffect(() => {
@@ -155,8 +229,13 @@ export default function TransactionForm({
           date: new Date(transaction.date),
           dueDate: new Date(transaction.dueDate),
           type: transaction.type as TransactionType,
-          customerName: transaction.customerName,
-          customerDocumentNumber: transaction.customerDocumentNumber,
+          assignorName: transaction.assignorName,
+          assignorDocumentNumber: transaction.assignorDocumentNumber,
+          payerName: transaction.payerName,
+          payerDocumentNumber: transaction.payerDocumentNumber,
+          investorName: transaction.investorName,
+          investorDocumentNumber: transaction.investorDocumentNumber,
+          description: transaction.description,
         }
       : {
           amount: 0,
@@ -166,7 +245,7 @@ export default function TransactionForm({
 
   return (
     <>
-      {customers && (
+      {selectData?.assignors && (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
             <FormField
@@ -204,20 +283,22 @@ export default function TransactionForm({
               )}
             />
             <FormField
-              name='customerName'
+              name='assignorName'
               control={form.control}
               render={({ field }) => (
                 <FormItem className='flex flex-col'>
-                  <FormLabel>{customerTitle}</FormLabel>
+                  <FormLabel>{assignorTitle}</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button variant={'outline'} role='combobox'>
                           {field.value
-                            ? customers.find(
-                                (customer) => customer.label === field.value
+                            ? selectData.assignors.find(
+                                (assignor) =>
+                                  assignor.value ===
+                                  form.getValues('assignorDocumentNumber')
                               )?.label
-                            : customerSelect}
+                            : assignorSelect}
                           <ChevronsUpDown className='ml-auto h-4 w-4 opacity-50' />
                         </Button>
                       </FormControl>
@@ -228,29 +309,240 @@ export default function TransactionForm({
                     >
                       <Command>
                         <CommandInput
-                          placeholder={customerSearchTitle}
+                          placeholder={assignorSearchTitle}
                           className='h-9'
                         />
                         <CommandList>
-                          <CommandEmpty>{customerNotFound}</CommandEmpty>
+                          <CommandEmpty>{assignorNotFound}</CommandEmpty>
                           <CommandGroup>
-                            {customers?.map((customer) => (
+                            {selectData.assignors?.map((assignor) => (
                               <CommandItem
-                                value={customer.label}
-                                key={customer.value}
+                                value={assignor.label}
+                                key={assignor.value}
                                 onSelect={() => {
-                                  form.setValue('customerName', customer.label);
+                                  if (!data) return;
+
+                                  const found = data.find(
+                                    (item) =>
+                                      item.documentNumber === assignor.value &&
+                                      item.type === 'A'
+                                  );
+
+                                  if (!found) return;
+
+                                  form.setValue('assignorName', found.name, {
+                                    shouldDirty: true,
+                                    shouldValidate: true,
+                                    shouldTouch: true,
+                                  });
                                   form.setValue(
-                                    'customerDocumentNumber',
-                                    customer.value
+                                    'assignorDocumentNumber',
+                                    found.documentNumber,
+                                    {
+                                      shouldDirty: true,
+                                      shouldValidate: true,
+                                      shouldTouch: true,
+                                    }
                                   );
                                 }}
                               >
-                                {customer.label}
+                                {assignor.label}
                                 <Check
                                   className={cn(
                                     'ml-auto',
-                                    customer.label === field.value
+                                    assignor.value ===
+                                      form.getValues('assignorDocumentNumber')
+                                      ? 'opacity-100'
+                                      : 'opacity-0'
+                                  )}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              name='payerName'
+              control={form.control}
+              render={({ field }) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel>{payerTitle}</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button variant={'outline'} role='combobox'>
+                          {field.value
+                            ? selectData.payers.find(
+                                (payer) =>
+                                  payer.value ===
+                                  form.getValues('payerDocumentNumber')
+                              )?.label
+                            : payerSelect}
+                          <ChevronsUpDown className='ml-auto h-4 w-4 opacity-50' />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className='w-auto p-0 bg-white shadow-lg'
+                      align='start'
+                    >
+                      <Command>
+                        <CommandInput
+                          placeholder={payerSearchTitle}
+                          className='h-9'
+                        />
+                        <CommandList>
+                          <CommandEmpty>{payerNotFound}</CommandEmpty>
+                          <CommandGroup>
+                            {selectData.payers?.map((payer) => (
+                              <CommandItem
+                                value={payer.label}
+                                key={payer.value}
+                                onSelect={() => {
+                                  if (!data) return;
+
+                                  const found = data.find(
+                                    (item) =>
+                                      item.documentNumber === payer.value &&
+                                      item.type === 'P'
+                                  );
+
+                                  if (!found) return;
+
+                                  form.setValue('payerName', found.name, {
+                                    shouldDirty: true,
+                                    shouldValidate: true,
+                                    shouldTouch: true,
+                                  });
+                                  form.setValue(
+                                    'payerDocumentNumber',
+                                    found.documentNumber,
+                                    {
+                                      shouldDirty: true,
+                                      shouldValidate: true,
+                                      shouldTouch: true,
+                                    }
+                                  );
+                                }}
+                              >
+                                {payer.label}
+                                <Check
+                                  className={cn(
+                                    'ml-auto',
+                                    payer.value ===
+                                      form.getValues('payerDocumentNumber')
+                                      ? 'opacity-100'
+                                      : 'opacity-0'
+                                  )}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              name='investorName'
+              control={form.control}
+              render={({ field }) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel>{investorTitle}</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button variant={'outline'} role='combobox'>
+                          {field.value
+                            ? selectData.investors.find(
+                                (investor) =>
+                                  investor.value ===
+                                  form.getValues('investorDocumentNumber')
+                              )?.label
+                            : investorSelect}
+                          <ChevronsUpDown className='ml-auto h-4 w-4 opacity-50' />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className='w-auto p-0 bg-white shadow-lg'
+                      align='start'
+                    >
+                      <Command>
+                        <CommandInput
+                          placeholder={investorSearchTitle}
+                          className='h-9'
+                        />
+                        <CommandList>
+                          <CommandEmpty>{investorNotFound}</CommandEmpty>
+                          <CommandGroup>
+                            {selectData.investors?.map((investor) => (
+                              <CommandItem
+                                value={investor.label}
+                                key={investor.value}
+                                onSelect={() => {
+                                  if (
+                                    investor.value === '' &&
+                                    investor.label === 'Selecione um investidor'
+                                  ) {
+                                    form.setValue('investorName', '', {
+                                      shouldDirty: true,
+                                      shouldValidate: true,
+                                      shouldTouch: true,
+                                    });
+                                    form.setValue(
+                                      'investorDocumentNumber',
+                                      '',
+                                      {
+                                        shouldDirty: true,
+                                        shouldValidate: true,
+                                        shouldTouch: true,
+                                      }
+                                    );
+                                    return;
+                                  }
+
+                                  if (!data) return;
+
+                                  const found = data.find(
+                                    (item) =>
+                                      item.documentNumber === investor.value &&
+                                      item.type === 'I'
+                                  );
+
+                                  if (!found) return;
+
+                                  form.setValue('investorName', found.name, {
+                                    shouldDirty: true,
+                                    shouldValidate: true,
+                                    shouldTouch: true,
+                                  });
+                                  form.setValue(
+                                    'investorDocumentNumber',
+                                    found.documentNumber,
+                                    {
+                                      shouldDirty: true,
+                                      shouldValidate: true,
+                                      shouldTouch: true,
+                                    }
+                                  );
+                                }}
+                              >
+                                {investor.label}
+                                <Check
+                                  className={cn(
+                                    'ml-auto',
+                                    investor.value ===
+                                      form.getValues('investorDocumentNumber')
                                       ? 'opacity-100'
                                       : 'opacity-0'
                                   )}
@@ -341,6 +633,19 @@ export default function TransactionForm({
                       />
                     </PopoverContent>
                   </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              name='description'
+              control={form.control}
+              render={({ field }) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel>Descrição</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

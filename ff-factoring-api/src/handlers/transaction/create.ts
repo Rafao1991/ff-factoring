@@ -15,14 +15,14 @@ export const createTransactionHandler = async (event: APIGatewayEvent) => {
   const body: Transaction = JSON.parse(event.body || '{}');
   console.info({ body: body });
 
-  if (!body.customerDocumentNumber) {
-    console.info({ message: 'Missing customerDocumentNumber' });
-    return getBadRequestResponse('Missing customerDocumentNumber');
+  if (!body.assignorDocumentNumber) {
+    console.info({ message: 'Missing assignorDocumentNumber' });
+    return getBadRequestResponse('Missing assignorDocumentNumber');
   }
 
-  if (!body.customerName) {
-    console.info({ message: 'Missing customerName' });
-    return getBadRequestResponse('Missing customerName');
+  if (!body.assignorName) {
+    console.info({ message: 'Missing assignorName' });
+    return getBadRequestResponse('Missing assignorName');
   }
 
   if (!body.amount) {
@@ -53,13 +53,18 @@ export const createTransactionHandler = async (event: APIGatewayEvent) => {
 
     const newTransaction: Transaction = {
       id: snowflake.generate(),
-      customerDocumentNumber: body.customerDocumentNumber,
-      customerName: body.customerName,
+      assignorDocumentNumber: body.assignorDocumentNumber,
+      assignorName: body.assignorName,
+      payerDocumentNumber: body.payerDocumentNumber,
+      payerName: body.payerName,
+      investorDocumentNumber: body.investorDocumentNumber,
+      investorName: body.investorName,
       amount: body.amount,
       date: body.date,
       dueDate: body.dueDate,
       type: body.type,
       completed: false,
+      description: body.description,
     };
     console.info({ newTransaction });
     await putTransaction(newTransaction);

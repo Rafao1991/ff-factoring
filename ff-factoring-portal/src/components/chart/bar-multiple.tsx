@@ -23,8 +23,8 @@ interface BarChartMultipleProps {
   label1: string;
   label2: string;
   footer: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: string;
+  endDate: string;
   totalEarningsByMonth: Record<string, TotalEarnings>;
 }
 

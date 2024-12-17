@@ -11,15 +11,21 @@ export const getCustomerHandler = async (event: APIGatewayProxyEvent) => {
   console.info({ event });
 
   const documentNumber = event.pathParameters?.documentNumber;
-  console.info({ documentNumber });
+  const type = event.pathParameters?.type as CustomerType;
+  console.info({ documentNumber, type });
 
   if (!documentNumber) {
     console.info({ message: 'Missing documentNumber' });
     return getBadRequestResponse('Missing documentNumber');
   }
 
+  if (!type) {
+    console.info({ message: 'Missing type' });
+    return getBadRequestResponse('Missing type');
+  }
+
   try {
-    const customer = await getCustomerByDocumentNumber(documentNumber);
+    const customer = await getCustomerByDocumentNumber(documentNumber, type);
     console.info({ customer });
 
     if (!customer) {
