@@ -1,0 +1,1 @@
+export { getStockHandler } from './get';

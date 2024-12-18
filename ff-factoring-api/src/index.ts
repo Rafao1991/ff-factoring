@@ -22,3 +22,5 @@ export {
   lastSixMonthsEarningsHandler,
   dailyTransactionsHandler,
 } from '@/handlers/report';
+
+export { getStockHandler } from '@/handlers/stock';

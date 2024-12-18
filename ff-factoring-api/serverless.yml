@@ -17,6 +17,7 @@ stages:
       transactionsTableName: ${sls:stage}-${self:service}-transactions
       cognitoUserPoolId: us-east-1_0SiontoGi
       cognitoUserPoolClientId: 1onbn5vq3buu1f5ijke3o1gnve
+      stockLimit: 800000
 
 resources:
   Resources:
@@ -188,6 +189,7 @@ provider:
   environment:
     CUSTOMERS_TABLE_NAME: ${param:customersTableName}
     TRANSACTIONS_TABLE_NAME: ${param:transactionsTableName}
+    STOCK_LIMIT: ${param:stockLimit}
 
 functions:
   healthCheck:
@@ -309,6 +311,15 @@ functions:
     events:
       - httpApi:
           path: /transactions/customer-due-date
+          method: get
+          authorizer:
+            name: ApiAuthorizer
+  getStock:
+    name: ${sls:stage}-${self:service}-getStock
+    handler: src/index.getStockHandler
+    events:
+      - httpApi:
+          path: /stock
           method: get
           authorizer:
             name: ApiAuthorizer

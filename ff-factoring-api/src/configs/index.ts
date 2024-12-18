@@ -27,3 +27,5 @@ export const getCustomerTableName = stringFromEnv('CUSTOMERS_TABLE_NAME');
 export const getTransactionsTableName = stringFromEnv(
   'TRANSACTIONS_TABLE_NAME'
 );
+
+export const getStockLimit = intFromEnv('STOCK_LIMIT');
