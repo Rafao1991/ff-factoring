@@ -16,7 +16,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { format } from 'date-fns';
 
 interface BarChartMultipleProps {
   title: string;
@@ -43,10 +42,14 @@ export function BarChartMultiple({
     value2: number;
   }[] = [];
 
-  Object.keys(totalEarningsByMonth).forEach((month) => {
+  const keys = Object.keys(totalEarningsByMonth);
+
+  keys.forEach((month, i) => {
+    if (i + 1 === keys.length) return;
+
     const monthData = totalEarningsByMonth[month];
     chartData.push({
-      month: format(new Date().setMonth(Number(month) - 1), 'LLLL'),
+      month,
       value1: monthData.check,
       value2: monthData.ticket,
     });
@@ -85,7 +88,6 @@ export function BarChartMultiple({
               axisLine={false}
               tickLine={false}
               tickMargin={8}
-              tickFormatter={(value) => value.slice(0, 3)}
             />
             <YAxis
               dataKey={'value1'}

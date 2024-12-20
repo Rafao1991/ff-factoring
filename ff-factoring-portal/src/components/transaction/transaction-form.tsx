@@ -30,15 +30,15 @@ import useListCustomers from '@/hooks/api/customers/use-list-customers';
 import { cn, formatCpfCnpj } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
+import { format, startOfToday, startOfYear } from 'date-fns';
 import { CalendarIcon, Check, ChevronsUpDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from 'react-oidc-context';
 import { z } from 'zod';
 
-const today = new Date();
-const minDate = new Date(today.getFullYear(), 0, 1);
+const today = startOfToday();
+const minDate = startOfYear(today);
 
 const typeTitle = 'Qual o tipo da operação? *';
 const typeIsMandatory = 'O tipo da operação é obrigatório';
@@ -226,8 +226,8 @@ export default function TransactionForm({
     defaultValues: transaction
       ? {
           amount: transaction.amount,
-          date: new Date(transaction.date),
-          dueDate: new Date(transaction.dueDate),
+          date: transaction.date,
+          dueDate: transaction.dueDate,
           type: transaction.type as TransactionType,
           assignorName: transaction.assignorName,
           assignorDocumentNumber: transaction.assignorDocumentNumber,
@@ -239,7 +239,7 @@ export default function TransactionForm({
         }
       : {
           amount: 0,
-          date: new Date(new Date().setHours(0, 0, 0, 0)),
+          date: today,
         },
   });
 

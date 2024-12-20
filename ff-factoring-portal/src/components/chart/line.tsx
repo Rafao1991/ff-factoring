@@ -16,7 +16,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { format } from 'date-fns';
 
 interface LineChartSimpleProps {
   title: string;
@@ -43,7 +42,7 @@ export function LineChartSimple({
   Object.keys(totalEarningsByMonth).forEach((month) => {
     const monthData = totalEarningsByMonth[month];
     chartData.push({
-      month: format(new Date().setMonth(Number(month) - 1), 'LLLL'),
+      month,
       value: monthData.total,
     });
   });
@@ -77,7 +76,6 @@ export function LineChartSimple({
               axisLine={false}
               tickLine={false}
               tickMargin={8}
-              tickFormatter={(value) => value.slice(0, 3)}
             />
             <YAxis
               dataKey={'value'}

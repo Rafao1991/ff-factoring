@@ -3,8 +3,15 @@ import {
   getSuccessResponse,
 } from '@/helpers/api-wrapper';
 import { getTransactionsByDateRange } from '@/services/transaction';
-import { addDays, format } from 'date-fns';
-import { subMonths } from 'date-fns/subMonths';
+import {
+  addDays,
+  addMonths,
+  eachMonthOfInterval,
+  format,
+  startOfMonth,
+  startOfToday,
+  subMonths,
+} from 'date-fns';
 
 const getTransactions = async (
   startDate: Date,
@@ -34,15 +41,10 @@ const getMonthObject = (
     message: 'Months object creation started',
   });
 
-  const minMonth = startDate.getMonth() + 1;
-  const maxMonth = endDate.getMonth() + 1;
-  const months = [minMonth, maxMonth];
-
-  for (let i = minMonth; i <= maxMonth; i++) {
-    if (!months.includes(i)) {
-      months.push(i);
-    }
-  }
+  const months = eachMonthOfInterval({
+    start: startDate,
+    end: endDate,
+  }).map((month) => format(month, 'MM/yyyy'));
 
   const monthsObject = Object.fromEntries(
     months.map((month) => [
@@ -91,7 +93,7 @@ const getTotalEarningsByMonth = async (
       message: `Processing transaction ${transaction.id}`,
     });
 
-    const month = new Date(transaction.date).getMonth() + 1;
+    const month = format(transaction.date, 'MM/yyyy');
 
     totalEarnings.total += transaction.amount;
     totalEarningsByMonth[month].total += transaction.amount;
@@ -176,6 +178,89 @@ const getTotalEarningsByAssignor = async (
   return totalEarningsByAssignor;
 };
 
+const getNextMonthEarningsProjection = async (transactions: Transaction[]) => {
+  console.info({
+    action: 'getNextMonthEarningsProjection',
+    message: 'Next month earnings projection started',
+  });
+
+  // group transactions by month and by day
+  const transactionsByMonthAndDay = transactions.reduce((acc, transaction) => {
+    const transactionDate = new Date(transaction.date);
+    const month = transactionDate.getMonth() + 1;
+    const day = transactionDate.getMilliseconds();
+
+    if (!acc[month]) {
+      acc[month] = {};
+    }
+
+    if (!acc[month][day]) {
+      acc[month][day] = [];
+    }
+
+    acc[month][day].push(transaction);
+
+    return acc;
+  }, {} as Record<string, Record<string, Transaction[]>>);
+
+  // get mean earnings by month and day
+  const meanEarningsByMonthAndDay = Object.keys(
+    transactionsByMonthAndDay
+  ).reduce((acc, month) => {
+    const monthData = transactionsByMonthAndDay[month];
+
+    Object.keys(monthData).forEach((day) => {
+      const dayData = monthData[day];
+      const totalEarnings = dayData.reduce(
+        (acc, transaction) => acc + transaction.amount,
+        0
+      );
+      const meanEarnings = totalEarnings / dayData.length;
+
+      if (!acc[month]) {
+        acc[month] = {};
+      }
+
+      acc[month][day] = meanEarnings;
+    });
+
+    return acc;
+  }, {} as Record<string, Record<string, number>>);
+
+  // get mean earnings by month
+  const meanEarningsByMonth = Object.keys(meanEarningsByMonthAndDay).reduce(
+    (acc, month) => {
+      const monthData = meanEarningsByMonthAndDay[month];
+      const days = Object.keys(monthData);
+      const totalEarnings = days.reduce((acc, day) => acc + monthData[day], 0);
+      const meanEarnings = totalEarnings / days.length;
+
+      acc[month] = meanEarnings;
+
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  // get next month earnings projection
+  const nextMonthEarningsProjection = Object.keys(meanEarningsByMonth).reduce(
+    (acc, month) => {
+      acc += meanEarningsByMonth[month];
+
+      return acc;
+    },
+    0
+  );
+
+  console.info({
+    action: 'getNextMonthEarningsProjection',
+    message: 'Next month earnings projection finished',
+    nextMonthEarningsProjection,
+  });
+
+  return nextMonthEarningsProjection;
+};
+
 export const lastSixMonthsEarningsHandler = async () => {
   console.info({
     action: 'lastSixMonthsEarningsHandler',
@@ -183,9 +268,9 @@ export const lastSixMonthsEarningsHandler = async () => {
   });
 
   try {
-    const today = new Date(new Date().setHours(0, 0, 0, 0));
-    const endDate = new Date(addDays(today, 1).setHours(0, 0, 0, 0));
-    const startDate = new Date(subMonths(today, 6).setHours(0, 0, 0, 0));
+    const today = startOfToday();
+    const endDate = addDays(today, 1);
+    const startDate = startOfMonth(subMonths(today, 6));
     const transactions = await getTransactions(startDate, endDate);
 
     if (transactions.length === 0) {
@@ -198,18 +283,28 @@ export const lastSixMonthsEarningsHandler = async () => {
       });
     }
 
-    const [{ totalEarnings, totalEarningsByMonth }, totalEarningsByAssignor] =
-      await Promise.all([
-        getTotalEarningsByMonth(transactions, startDate, endDate),
-        getTotalEarningsByAssignor(transactions),
-      ]);
+    const [
+      { totalEarnings, totalEarningsByMonth },
+      totalEarningsByAssignor,
+      nextMonthEarningsProjection,
+    ] = await Promise.all([
+      getTotalEarningsByMonth(transactions, startDate, endDate),
+      getTotalEarningsByAssignor(transactions),
+      getNextMonthEarningsProjection(transactions),
+    ]);
+
+    totalEarningsByMonth[format(addMonths(endDate, 1), 'MM/yyyy')] = {
+      total: nextMonthEarningsProjection,
+      check: 0,
+      ticket: 0,
+    };
 
     const response: LastSixMonthsEarnings = {
       startDate: format(startDate, 'PP'),
       endDate: format(endDate, 'PP'),
       totalEarnings,
       totalEarningsByMonth,
-      totalEarningsByAssignor: totalEarningsByAssignor,
+      totalEarningsByAssignor,
     };
 
     console.info({

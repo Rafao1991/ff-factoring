@@ -46,7 +46,7 @@ export default function DashboardPage() {
             <LineChartSimple
               title='Receita mensal'
               label='R$'
-              footer='Receita dos últimos seis meses'
+              footer='Receita dos últimos seis meses e projeção para o próximo mês'
               startDate={lastSixMonthsEarnings.startDate}
               endDate={lastSixMonthsEarnings.endDate}
               totalEarningsByMonth={lastSixMonthsEarnings.totalEarningsByMonth}
